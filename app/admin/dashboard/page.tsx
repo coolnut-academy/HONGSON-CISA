@@ -28,7 +28,7 @@ export default function AdminDashboard() {
             <GlassCard padding="lg" hover={false} className="relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-emerald-500/20 to-cyan-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-blue-500/10 to-transparent rounded-full blur-2xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
-                
+
                 <div className="relative z-10">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
@@ -44,10 +44,10 @@ export default function AdminDashboard() {
                                 กำลังดูแลสมรรถนะ: <span className="text-[var(--accent-success)] font-semibold">{user?.assignedCompetency || "ทุกสมรรถนะ"}</span>
                             </p>
                         </div>
-                        
+
                         {isSuperAdmin && (
-                            <Link 
-                                href="/super-admin/dashboard" 
+                            <Link
+                                href="/super-admin/dashboard"
                                 className="btn-glass btn-secondary btn-sm"
                             >
                                 กลับไปหน้า Super Admin
@@ -96,6 +96,24 @@ export default function AdminDashboard() {
                             </p>
                             <div className="flex items-center text-[var(--accent-primary)] text-sm font-medium opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0">
                                 ดูรายงาน <ArrowRight className="w-4 h-4 ml-1" />
+                            </div>
+                        </GlassCard>
+                    </Link>
+
+                    {/* Students Import Card */}
+                    <Link href="/admin/students/import" className="group">
+                        <GlassCard className="h-full flex flex-col">
+                            <div className="p-3 w-fit rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 text-[var(--accent-secondary)] mb-4 group-hover:scale-110 transition-transform">
+                                <FileText className="w-6 h-6" />
+                            </div>
+                            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
+                                นำเข้าข้อมูลนักเรียน
+                            </h3>
+                            <p className="text-[var(--text-secondary)] text-sm mb-4 flex-1">
+                                นำเข้าข้อมูลนักเรียนจำนวนมากด้วยไฟล์ CSV
+                            </p>
+                            <div className="flex items-center text-[var(--accent-secondary)] text-sm font-medium opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0">
+                                จัดการข้อมูล <ArrowRight className="w-4 h-4 ml-1" />
                             </div>
                         </GlassCard>
                     </Link>
