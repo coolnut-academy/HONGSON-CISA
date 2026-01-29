@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { ArrowRight, CheckCircle2, Layout, Lock, Zap } from "lucide-react";
+import { DeveloperBadge } from "@/components/ui/DeveloperBadge";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -144,7 +145,8 @@ export default function Home() {
 
       <footer className="py-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 text-center text-slate-500">
-          <p>© 2026 Hongson-CISA. สงวนลิขสิทธิ์.</p>
+          <p className="mb-4">© 2026 Hongson-CISA. สงวนลิขสิทธิ์.</p>
+          <DeveloperBadge />
         </div>
       </footer>
     </div>
