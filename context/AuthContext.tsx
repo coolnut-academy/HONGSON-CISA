@@ -51,8 +51,8 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
     };
 
     const loginWithStudentId = async (studentId: string) => {
-        const email = `${studentId}@cisa.school`;
-        const password = `${studentId}`; // Simple password policy as discussed
+        const email = `${studentId}@hongsoncisa.com`;
+        const password = `hongsoncisa${studentId}`; // Prefix ensures 6+ char minimum for Firebase
 
         try {
             // Try to login

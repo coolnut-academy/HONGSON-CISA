@@ -129,14 +129,18 @@ export default function LoginPage() {
                                 >
                                     <div className="space-y-4">
                                         <GlassInput
-                                            label="รหัสนักเรียน"
-                                            placeholder="กรอกรหัสนักเรียนของคุณ"
+                                            label="Student ID (รหัสนักเรียน)"
+                                            placeholder="เช่น 67001"
                                             value={studentId}
                                             onChange={(e) => setStudentId(e.target.value)}
                                             leftIcon={<GraduationCap size={18} />}
                                             error={error}
                                             autoFocus
+                                            maxLength={5}
                                         />
+                                        <p className="text-xs text-[var(--text-tertiary)] text-center">
+                                            กรอกเลขประจำตัว 5 หลักเพื่อเข้าสู่ระบบ
+                                        </p>
                                     </div>
 
                                     <GlassButton

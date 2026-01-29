@@ -4,7 +4,7 @@ import { useRoleProtection } from "@/hooks/useRoleProtection";
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { Upload, FileText, CheckCircle2, AlertTriangle, Download, ArrowLeft, Loader2 } from "lucide-react";
+import { Upload, FileText, CheckCircle2, AlertTriangle, Download, ArrowLeft, Loader2, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import Papa from "papaparse";
 import { db } from "@/lib/firebase";
@@ -24,8 +24,11 @@ const IMPORT_CONFIG = {
     maxStudentsPerImport: 5000 // Max students per import
 };
 
+// Password prefix for Firebase (ensures 6+ characters)
+const PASSWORD_PREFIX = "hongsoncisa";
+
 export default function StudentImportPage() {
-    useRoleProtection(['admin', 'super_admin']);
+    const { isLoading, isAuthorized } = useRoleProtection(['super_admin']);
 
     const [file, setFile] = useState<File | null>(null);
     const [previewData, setPreviewData] = useState<StudentImportData[]>([]);
@@ -160,6 +163,31 @@ export default function StudentImportPage() {
         link.click();
         document.body.removeChild(link);
     };
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-[var(--accent-primary)]" />
+            </div>
+        );
+    }
+
+    if (!isAuthorized) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <div className="p-4 rounded-full bg-red-500/10 text-red-500">
+                    <ShieldAlert size={48} />
+                </div>
+                <h2 className="text-xl font-bold text-[var(--text-primary)]">ไม่มีสิทธิ์เข้าถึง</h2>
+                <p className="text-[var(--text-secondary)]">เฉพาะ Super Admin เท่านั้นที่สามารถนำเข้าข้อมูลนักเรียนได้</p>
+                <Link href="/admin/dashboard">
+                    <GlassButton variant="outline" icon={<ArrowLeft size={16} />}>
+                        กลับหน้าหลัก
+                    </GlassButton>
+                </Link>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRoleProtection } from "@/hooks/useRoleProtection";
-import { Users, Search, Loader2, UserCog, Trash2, Shield } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Users, Search, Loader2, UserCog, Trash2, Shield, Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
@@ -12,9 +13,13 @@ import { GlassModal } from "@/components/ui/GlassModal";
 import { GlassSelect } from "@/components/ui/GlassInput";
 
 export default function UserManagementPage() {
-    const { isLoading } = useRoleProtection(['super_admin']);
+    const { isLoading } = useRoleProtection(['super_admin', 'admin']);
+    const { user: currentUser } = useAuth();
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    
+    const isSuperAdmin = currentUser?.role === 'super_admin';
+    const isReadOnly = currentUser?.role === 'admin';
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedUser, setSelectedUser] = useState<any | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -113,11 +118,20 @@ export default function UserManagementPage() {
                                 <Users className="w-8 h-8" />
                             </div>
                             <div>
-                                <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
-                                    จัดการผู้ใช้งาน
-                                </h1>
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+                                        จัดการผู้ใช้งาน
+                                    </h1>
+                                    {isReadOnly && (
+                                        <GlassBadge variant="warning" className="flex items-center gap-1">
+                                            <Eye size={12} />
+                                            View Only
+                                        </GlassBadge>
+                                    )}
+                                </div>
                                 <p className="text-[var(--text-secondary)]">
                                     ทั้งหมด {users.length} คน
+                                    {isReadOnly && " • โหมดดูอย่างเดียว (เฉพาะ Super Admin เท่านั้นที่แก้ไขได้)"}
                                 </p>
                             </div>
                         </div>
@@ -154,13 +168,13 @@ export default function UserManagementPage() {
                                     <th>อีเมล</th>
                                     <th>บทบาท</th>
                                     <th>ห้องเรียน</th>
-                                    <th className="text-center">จัดการ</th>
+                                    {isSuperAdmin && <th className="text-center">จัดการ</th>}
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="text-center py-8 text-[var(--text-tertiary)]">
+                                        <td colSpan={isSuperAdmin ? 6 : 5} className="text-center py-8 text-[var(--text-tertiary)]">
                                             {searchQuery ? "ไม่พบผู้ใช้งานที่ค้นหา" : "ไม่พบข้อมูลผู้ใช้งาน"}
                                         </td>
                                     </tr>
@@ -172,24 +186,26 @@ export default function UserManagementPage() {
                                             <td className="text-[var(--text-secondary)]">{u.email || '-'}</td>
                                             <td>{getRoleBadge(u.role)}</td>
                                             <td>{u.classRoom || '-'}</td>
-                                            <td>
-                                                <div className="flex items-center justify-center gap-2">
-                                                    <button
-                                                        onClick={() => { setSelectedUser(u); setNewRole(u.role); setShowEditModal(true); }}
-                                                        className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
-                                                        title="แก้ไขบทบาท"
-                                                    >
-                                                        <UserCog size={18} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => { setSelectedUser(u); setShowDeleteModal(true); }}
-                                                        className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
-                                                        title="ลบผู้ใช้"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
-                                                </div>
-                                            </td>
+                                            {isSuperAdmin && (
+                                                <td>
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <button
+                                                            onClick={() => { setSelectedUser(u); setNewRole(u.role); setShowEditModal(true); }}
+                                                            className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
+                                                            title="แก้ไขบทบาท"
+                                                        >
+                                                            <UserCog size={18} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setSelectedUser(u); setShowDeleteModal(true); }}
+                                                            className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
+                                                            title="ลบผู้ใช้"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            )}
                                         </tr>
                                     ))
                                 )}
