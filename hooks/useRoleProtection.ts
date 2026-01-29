@@ -15,7 +15,7 @@ export function useRoleProtection(allowedRoles: UserRole[]) {
             if (!user) {
                 // Not logged in
                 router.push("/login");
-            } else if (!allowedRoles.includes(user.role)) {
+            } else if (!allowedRoles.includes(user.role) && user.role !== 'super_admin') {
                 // Logged in but not allowed
                 router.push("/unauthorized");
             } else {
