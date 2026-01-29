@@ -1,0 +1,338 @@
+[debug] [2026-01-29T03:17:53.286Z] ----------------------------------------------------------------------
+[debug] [2026-01-29T03:17:53.290Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\PHYSICS COOLNUT\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2026-01-29T03:17:53.290Z] CLI Version:   15.4.0
+[debug] [2026-01-29T03:17:53.290Z] Platform:      win32
+[debug] [2026-01-29T03:17:53.290Z] Node Version:  v24.13.0
+[debug] [2026-01-29T03:17:53.291Z] Time:          Thu Jan 29 2026 10:17:53 GMT+0700 (เวลาอินโดจีน)
+[debug] [2026-01-29T03:17:53.291Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-29T03:17:55.555Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-29T03:17:55.555Z] > authorizing via signed-in user (satitsiriwach@gmail.com)
+[debug] [2026-01-29T03:17:55.556Z] [iam] checking project hongson-cisa for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-01-29T03:17:55.557Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:17:55.557Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:17:55.558Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions [none]
+[debug] [2026-01-29T03:17:55.558Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:17:55.558Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-01-29T03:17:56.846Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions 200
+[debug] [2026-01-29T03:17:56.847Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-01-29T03:17:56.847Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:17:56.847Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:17:56.847Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/hongson-cisa/serviceAccounts/hongson-cisa@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-01-29T03:17:56.847Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/hongson-cisa/serviceAccounts/hongson-cisa@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-01-29T03:17:58.326Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/hongson-cisa/serviceAccounts/hongson-cisa@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-01-29T03:17:58.326Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/hongson-cisa/serviceAccounts/hongson-cisa@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'hongson-cisa'...
+[info] 
+[info] i  deploying functions 
+[info] Running command: npm --prefix "$RESOURCE_DIR" run build
+[info] +  functions: Finished running predeploy script. 
+[debug] [2026-01-29T03:18:07.135Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:07.135Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:07.135Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudresourcemanager.googleapis.com [none]
+[debug] [2026-01-29T03:18:07.135Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudresourcemanager.googleapis.com x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:18:08.824Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudresourcemanager.googleapis.com 200
+[debug] [2026-01-29T03:18:08.824Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudresourcemanager.googleapis.com [omitted]
+[debug] [2026-01-29T03:18:08.828Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:08.828Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:08.828Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa [none]
+[debug] [2026-01-29T03:18:10.067Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa 200
+[debug] [2026-01-29T03:18:10.067Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa {"projectNumber":"319750794100","projectId":"hongson-cisa","lifecycleState":"ACTIVE","name":"HONGSON-CISA","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-01-29T01:24:33.955060Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[debug] [2026-01-29T03:18:10.070Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:10.070Z] Checked if tokens are valid: true, expires at: 1769659583916
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2026-01-29T03:18:10.071Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:10.071Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:10.071Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudbuild.googleapis.com [none]
+[debug] [2026-01-29T03:18:10.071Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudbuild.googleapis.com x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:18:10.072Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/artifactregistry.googleapis.com [none]
+[debug] [2026-01-29T03:18:10.072Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/artifactregistry.googleapis.com x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:18:10.448Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudbuild.googleapis.com 200
+[debug] [2026-01-29T03:18:10.448Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudbuild.googleapis.com [omitted]
+[warn] !  functions: missing required API cloudbuild.googleapis.com. Enabling now... 
+[debug] [2026-01-29T03:18:10.449Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:10.449Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:10.449Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudbuild.googleapis.com:enable [none]
+[debug] [2026-01-29T03:18:10.449Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudbuild.googleapis.com:enable x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:18:11.625Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/artifactregistry.googleapis.com 200
+[debug] [2026-01-29T03:18:11.625Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/artifactregistry.googleapis.com [omitted]
+[warn] !  artifactregistry: missing required API artifactregistry.googleapis.com. Enabling now... 
+[debug] [2026-01-29T03:18:11.625Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:11.625Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:11.626Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/artifactregistry.googleapis.com:enable [none]
+[debug] [2026-01-29T03:18:11.626Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/artifactregistry.googleapis.com:enable x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:18:12.043Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/artifactregistry.googleapis.com:enable 200
+[debug] [2026-01-29T03:18:12.043Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/artifactregistry.googleapis.com:enable [omitted]
+[debug] [2026-01-29T03:18:12.073Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudbuild.googleapis.com:enable 200
+[debug] [2026-01-29T03:18:12.073Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/cloudbuild.googleapis.com:enable [omitted]
+[debug] [2026-01-29T03:18:22.078Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:22.078Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:22.079Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/hongson-cisa/adminSdkConfig [none]
+[debug] [2026-01-29T03:18:22.691Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/hongson-cisa/adminSdkConfig 200
+[debug] [2026-01-29T03:18:22.691Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/hongson-cisa/adminSdkConfig {"projectId":"hongson-cisa","storageBucket":"hongson-cisa.firebasestorage.app"}
+[debug] [2026-01-29T03:18:22.693Z] Validating nodejs source
+[debug] [2026-01-29T03:18:24.029Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint . --fix",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@google-cloud/vertexai": "^1.10.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^7.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.12.0",
+    "@typescript-eslint/parser": "^5.12.0",
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.25.4",
+    "firebase-functions-test": "^3.4.1",
+    "typescript": "^5.7.3"
+  },
+  "private": true
+}
+[debug] [2026-01-29T03:18:24.029Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2026-01-29T03:18:24.031Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-01-29T03:18:24.039Z] Found firebase-functions binary at 'C:\Users\PHYSICS COOLNUT\Desktop\honson_cisa\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8009
+
+[debug] [2026-01-29T03:18:24.925Z] Got response from /__/functions.yaml {"endpoints":{"gradeExamBatch":{"availableMemoryMb":1024,"timeoutSeconds":300,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"gradeExamBatch"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2026-01-29T03:18:28.963Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:28.963Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:28.964Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/firebaseextensions.googleapis.com [none]
+[debug] [2026-01-29T03:18:28.964Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/firebaseextensions.googleapis.com x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:18:30.462Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/firebaseextensions.googleapis.com 200
+[debug] [2026-01-29T03:18:30.463Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/firebaseextensions.googleapis.com [omitted]
+[warn] !  extensions: missing required API firebaseextensions.googleapis.com. Enabling now... 
+[debug] [2026-01-29T03:18:30.463Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:30.463Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:30.463Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/firebaseextensions.googleapis.com:enable [none]
+[debug] [2026-01-29T03:18:30.463Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/firebaseextensions.googleapis.com:enable x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:18:32.046Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/firebaseextensions.googleapis.com:enable 200
+[debug] [2026-01-29T03:18:32.046Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/hongson-cisa/services/firebaseextensions.googleapis.com:enable [omitted]
+[debug] [2026-01-29T03:18:42.053Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-29T03:18:42.054Z] > authorizing via signed-in user (satitsiriwach@gmail.com)
+[debug] [2026-01-29T03:18:42.054Z] [iam] checking project hongson-cisa for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2026-01-29T03:18:42.054Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:42.054Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:42.054Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions [none]
+[debug] [2026-01-29T03:18:42.054Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:18:42.054Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2026-01-29T03:18:43.266Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions 200
+[debug] [2026-01-29T03:18:43.266Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2026-01-29T03:18:43.266Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:43.267Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:43.267Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/hongson-cisa/instances pageSize=100&pageToken=
+[debug] [2026-01-29T03:18:45.844Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/hongson-cisa/instances 200
+[debug] [2026-01-29T03:18:45.844Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/hongson-cisa/instances {}
+[info] i  functions: preparing functions directory for uploading... 
+[info] i  functions: packaged C:\Users\PHYSICS COOLNUT\Desktop\honson_cisa\functions (99.53 KB) for uploading 
+[debug] [2026-01-29T03:18:45.901Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:45.901Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:45.901Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/hongson-cisa/locations/-/functions [none]
+[debug] [2026-01-29T03:18:46.847Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/hongson-cisa/locations/-/functions 200
+[debug] [2026-01-29T03:18:46.848Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/hongson-cisa/locations/-/functions {}
+[debug] [2026-01-29T03:18:46.848Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:46.848Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:46.848Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2026-01-29T03:18:48.435Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/-/functions 200
+[debug] [2026-01-29T03:18:48.435Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/-/functions {}
+[info] i  functions: ensuring required API run.googleapis.com is enabled... 
+[debug] [2026-01-29T03:18:48.438Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:48.438Z] Checked if tokens are valid: true, expires at: 1769659583916
+[info] i  functions: ensuring required API eventarc.googleapis.com is enabled... 
+[debug] [2026-01-29T03:18:48.438Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:48.439Z] Checked if tokens are valid: true, expires at: 1769659583916
+[info] i  functions: ensuring required API pubsub.googleapis.com is enabled... 
+[debug] [2026-01-29T03:18:48.439Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:48.439Z] Checked if tokens are valid: true, expires at: 1769659583916
+[info] i  functions: ensuring required API storage.googleapis.com is enabled... 
+[debug] [2026-01-29T03:18:48.440Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:48.440Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:48.440Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/run.googleapis.com [none]
+[debug] [2026-01-29T03:18:48.440Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/run.googleapis.com x-goog-quota-user=projects/319750794100
+[debug] [2026-01-29T03:18:48.441Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/eventarc.googleapis.com [none]
+[debug] [2026-01-29T03:18:48.441Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/eventarc.googleapis.com x-goog-quota-user=projects/319750794100
+[debug] [2026-01-29T03:18:48.442Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/pubsub.googleapis.com [none]
+[debug] [2026-01-29T03:18:48.443Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/pubsub.googleapis.com x-goog-quota-user=projects/319750794100
+[debug] [2026-01-29T03:18:48.444Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/storage.googleapis.com [none]
+[debug] [2026-01-29T03:18:48.444Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/storage.googleapis.com x-goog-quota-user=projects/319750794100
+[debug] [2026-01-29T03:18:49.948Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/eventarc.googleapis.com 200
+[debug] [2026-01-29T03:18:49.948Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/eventarc.googleapis.com [omitted]
+[warn] !  functions: missing required API eventarc.googleapis.com. Enabling now... 
+[debug] [2026-01-29T03:18:49.949Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:49.949Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:49.949Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/319750794100/services/eventarc.googleapis.com:enable [none]
+[debug] [2026-01-29T03:18:49.949Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/319750794100/services/eventarc.googleapis.com:enable x-goog-quota-user=projects/319750794100
+[debug] [2026-01-29T03:18:49.958Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/pubsub.googleapis.com 200
+[debug] [2026-01-29T03:18:49.958Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/pubsub.googleapis.com [omitted]
+[info] +  functions: required API pubsub.googleapis.com is enabled 
+[debug] [2026-01-29T03:18:49.964Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/storage.googleapis.com 200
+[debug] [2026-01-29T03:18:49.964Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/storage.googleapis.com [omitted]
+[info] +  functions: required API storage.googleapis.com is enabled 
+[debug] [2026-01-29T03:18:49.983Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/run.googleapis.com 200
+[debug] [2026-01-29T03:18:49.984Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/319750794100/services/run.googleapis.com [omitted]
+[warn] !  functions: missing required API run.googleapis.com. Enabling now... 
+[debug] [2026-01-29T03:18:49.984Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:49.984Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:18:49.984Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/319750794100/services/run.googleapis.com:enable [none]
+[debug] [2026-01-29T03:18:49.984Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/319750794100/services/run.googleapis.com:enable x-goog-quota-user=projects/319750794100
+[debug] [2026-01-29T03:18:51.462Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/319750794100/services/eventarc.googleapis.com:enable 200
+[debug] [2026-01-29T03:18:51.462Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/319750794100/services/eventarc.googleapis.com:enable [omitted]
+[debug] [2026-01-29T03:18:51.560Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/319750794100/services/run.googleapis.com:enable 200
+[debug] [2026-01-29T03:18:51.560Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/319750794100/services/run.googleapis.com:enable [omitted]
+[info] i  functions: generating the service identity for pubsub.googleapis.com... 
+[debug] [2026-01-29T03:19:01.567Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:01.567Z] Checked if tokens are valid: true, expires at: 1769659583916
+[info] i  functions: generating the service identity for eventarc.googleapis.com... 
+[debug] [2026-01-29T03:19:01.567Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:01.567Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:01.567Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/pubsub.googleapis.com:generateServiceIdentity [none]
+[debug] [2026-01-29T03:19:01.567Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/pubsub.googleapis.com:generateServiceIdentity x-goog-quota-user=projects/319750794100
+[debug] [2026-01-29T03:19:01.567Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/pubsub.googleapis.com:generateServiceIdentity {}
+[debug] [2026-01-29T03:19:01.568Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/eventarc.googleapis.com:generateServiceIdentity [none]
+[debug] [2026-01-29T03:19:01.569Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/eventarc.googleapis.com:generateServiceIdentity x-goog-quota-user=projects/319750794100
+[debug] [2026-01-29T03:19:01.569Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/eventarc.googleapis.com:generateServiceIdentity {}
+[debug] [2026-01-29T03:19:03.265Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/pubsub.googleapis.com:generateServiceIdentity 200
+[debug] [2026-01-29T03:19:03.265Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/pubsub.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-319750794100@gcp-sa-pubsub.iam.gserviceaccount.com","uniqueId":"106157571638549324192"}}
+[debug] [2026-01-29T03:19:03.611Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/eventarc.googleapis.com:generateServiceIdentity 200
+[debug] [2026-01-29T03:19:03.611Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/319750794100/services/eventarc.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-319750794100@gcp-sa-eventarc.iam.gserviceaccount.com","uniqueId":"100909277897369765316"}}
+[debug] [2026-01-29T03:19:03.613Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:03.614Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:03.614Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa [none]
+[debug] [2026-01-29T03:19:04.870Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa 200
+[debug] [2026-01-29T03:19:04.870Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa {"projectNumber":"319750794100","projectId":"hongson-cisa","lifecycleState":"ACTIVE","name":"HONGSON-CISA","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-01-29T01:24:33.955060Z"}
+[debug] [2026-01-29T03:19:04.871Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:04.871Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:04.871Z] >>> [apiv2][query] GET https://compute.googleapis.com/compute/v1/projects/319750794100 [none]
+[debug] [2026-01-29T03:19:07.280Z] <<< [apiv2][status] GET https://compute.googleapis.com/compute/v1/projects/319750794100 403
+[debug] [2026-01-29T03:19:07.280Z] <<< [apiv2][body] GET https://compute.googleapis.com/compute/v1/projects/319750794100 {"error":{"code":403,"message":"Compute Engine API has not been used in project 319750794100 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 319750794100 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"service":"compute.googleapis.com","consumer":"projects/319750794100","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100","containerInfo":"319750794100","serviceTitle":"Compute Engine API"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 319750794100 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100"}]}]}}
+[debug] [2026-01-29T03:19:07.280Z] unable to look up default compute service account. Falling back to 319750794100-compute@developer.gserviceaccount.com. Error: {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":403,"message":"Compute Engine API has not been used in project 319750794100 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 319750794100 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"service":"compute.googleapis.com","consumer":"projects/319750794100","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100","containerInfo":"319750794100","serviceTitle":"Compute Engine API"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 319750794100 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100"}]}]}},"response":{"statusCode":403}},"exit":1,"message":"Request to https://compute.googleapis.com/compute/v1/projects/319750794100 had HTTP Error: 403, Compute Engine API has not been used in project 319750794100 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=319750794100 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":403}
+[debug] [2026-01-29T03:19:07.281Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:07.281Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:07.281Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/hongson-cisa/billingInfo [none]
+[debug] [2026-01-29T03:19:08.669Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/hongson-cisa/billingInfo 200
+[debug] [2026-01-29T03:19:08.669Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/hongson-cisa/billingInfo {"name":"projects/hongson-cisa/billingInfo","projectId":"hongson-cisa","billingAccountName":"billingAccounts/011D60-7CBDC2-74AA9D","billingEnabled":true}
+[debug] [2026-01-29T03:19:08.670Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:08.670Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:08.670Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions:generateUploadUrl [none]
+[debug] [2026-01-29T03:19:10.981Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions:generateUploadUrl 200
+[debug] [2026-01-29T03:19:10.981Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/gcf-v2-uploads-319750794100.us-central1.cloudfunctions.appspot.com/b6ba74fc-fbde-4ccd-9395-16f32b4e6c0e.zip?GoogleAccessId=service-319750794100@gcf-admin-robot.iam.gserviceaccount.com&Expires=1769658551&Signature=HGey7HPPdNy2B%2FMc0d%2BgyeOGm2lxgvf1AJFZV%2BhQijlBqG9AOIARMb46mPeg%2Bse8aevr5jCQ8GVso3ScBzDUFzF4YmuThkuKo1bLNXM3iAgxYxE02d1hNOcju%2BFkZbY%2BZp9%2BeWlzK3CGRD4mN4bGc7igaScXVWLkaG2Mkx%2F9KG1P%2BU9M5v96IoUp5V82OZIN6fgiETdsrqhDTgdcmR2gks91p1tBiP8F9An928ie2wqWGKPmXJ%2B%2FwFqaMxGfM0Y19hqRNStTYiKttIwFSYnGZYFPEvGKg%2FpJqnU67BNV1ap28ie%2BDlvcqoQGsb82xX0PFanx8jn2Cf8WxhOzdJLkXA%3D%3D","storageSource":{"bucket":"gcf-v2-uploads-319750794100.us-central1.cloudfunctions.appspot.com","object":"b6ba74fc-fbde-4ccd-9395-16f32b4e6c0e.zip"}}
+[debug] [2026-01-29T03:19:10.981Z] >>> [apiv2][query] PUT https://storage.googleapis.com/gcf-v2-uploads-319750794100.us-central1.cloudfunctions.appspot.com/b6ba74fc-fbde-4ccd-9395-16f32b4e6c0e.zip GoogleAccessId=service-319750794100%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1769658551&Signature=HGey7HPPdNy2B%2FMc0d%2BgyeOGm2lxgvf1AJFZV%2BhQijlBqG9AOIARMb46mPeg%2Bse8aevr5jCQ8GVso3ScBzDUFzF4YmuThkuKo1bLNXM3iAgxYxE02d1hNOcju%2BFkZbY%2BZp9%2BeWlzK3CGRD4mN4bGc7igaScXVWLkaG2Mkx%2F9KG1P%2BU9M5v96IoUp5V82OZIN6fgiETdsrqhDTgdcmR2gks91p1tBiP8F9An928ie2wqWGKPmXJ%2B%2FwFqaMxGfM0Y19hqRNStTYiKttIwFSYnGZYFPEvGKg%2FpJqnU67BNV1ap28ie%2BDlvcqoQGsb82xX0PFanx8jn2Cf8WxhOzdJLkXA%3D%3D
+[debug] [2026-01-29T03:19:10.981Z] >>> [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-319750794100.us-central1.cloudfunctions.appspot.com/b6ba74fc-fbde-4ccd-9395-16f32b4e6c0e.zip [stream]
+[debug] [2026-01-29T03:19:12.840Z] <<< [apiv2][status] PUT https://storage.googleapis.com/gcf-v2-uploads-319750794100.us-central1.cloudfunctions.appspot.com/b6ba74fc-fbde-4ccd-9395-16f32b4e6c0e.zip 200
+[debug] [2026-01-29T03:19:12.840Z] <<< [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-319750794100.us-central1.cloudfunctions.appspot.com/b6ba74fc-fbde-4ccd-9395-16f32b4e6c0e.zip [omitted]
+[info] +  functions: functions source uploaded successfully 
+[info] i  functions: creating Node.js 24 (2nd Gen) function gradeExamBatch(us-central1)... 
+[debug] [2026-01-29T03:19:12.845Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:12.845Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:12.846Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions functionId=gradeExamBatch
+[debug] [2026-01-29T03:19:12.846Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions {"name":"projects/hongson-cisa/locations/us-central1/functions/gradeExamBatch","buildConfig":{"runtime":"nodejs24","entryPoint":"gradeExamBatch","source":{"storageSource":{"bucket":"gcf-v2-uploads-319750794100.us-central1.cloudfunctions.appspot.com","object":"b6ba74fc-fbde-4ccd-9395-16f32b4e6c0e.zip"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}},"serviceConfig":{"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"hongson-cisa\",\"storageBucket\":\"hongson-cisa.firebasestorage.app\"}","GCLOUD_PROJECT":"hongson-cisa","EVENTARC_CLOUD_EVENT_SOURCE":"projects/hongson-cisa/locations/us-central1/services/gradeExamBatch","FUNCTION_TARGET":"gradeExamBatch","LOG_EXECUTION_ID":"true"},"ingressSettings":null,"timeoutSeconds":300,"serviceAccountEmail":null,"availableMemory":"1024Mi","minInstanceCount":null,"maxInstanceCount":null,"maxInstanceRequestConcurrency":80,"availableCpu":"1","vpcConnector":null,"vpcConnectorEgressSettings":null},"labels":{"deployment-tool":"cli-firebase","deployment-callable":"true","firebase-functions-hash":"5302377f4337b3a2968afb5c5656cb3dd1ff53ab"}}
+[debug] [2026-01-29T03:19:16.381Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions 500
+[debug] [2026-01-29T03:19:16.381Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions {"error":{"code":500,"message":"Could not create Cloud Run service gradeexambatch. The service has encountered an internal error. Please try again later","status":"INTERNAL"}}
+[warn] !  functions: Request to https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions?functionId=gradeExamBatch had HTTP Error: 500, Could not create Cloud Run service gradeexambatch. The service has encountered an internal error. Please try again later 
+[warn] !  functions:  failed to create function projects/hongson-cisa/locations/us-central1/functions/gradeExamBatch 
+[error] Failed to create function projects/hongson-cisa/locations/us-central1/functions/gradeExamBatch
+[debug] [2026-01-29T03:19:16.388Z] Total Function Deployment time: 3540
+[debug] [2026-01-29T03:19:16.388Z] 1 Functions Deployed
+[debug] [2026-01-29T03:19:16.388Z] 1 Functions Errored
+[debug] [2026-01-29T03:19:16.388Z] 0 Function Deployments Aborted
+[debug] [2026-01-29T03:19:16.388Z] Average Function Deployment time: 3540
+[info] 
+[info] Functions deploy had errors with the following functions:
+	gradeExamBatch(us-central1)
+[debug] [2026-01-29T03:19:16.496Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:16.496Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:19:16.496Z] >>> [apiv2][query] GET https://artifactregistry.googleapis.com/v1/projects/hongson-cisa/locations/us-central1/repositories/gcf-artifacts [none]
+[debug] [2026-01-29T03:19:17.830Z] <<< [apiv2][status] GET https://artifactregistry.googleapis.com/v1/projects/hongson-cisa/locations/us-central1/repositories/gcf-artifacts 404
+[debug] [2026-01-29T03:19:17.830Z] <<< [apiv2][body] GET https://artifactregistry.googleapis.com/v1/projects/hongson-cisa/locations/us-central1/repositories/gcf-artifacts {"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}}
+[debug] [2026-01-29T03:19:17.830Z] Failed to check artifact cleanup policy for region us-central1: Request to https://artifactregistry.googleapis.com/v1/projects/hongson-cisa/locations/us-central1/repositories/gcf-artifacts had HTTP Error: 404, Requested entity was not found. {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}},"response":{"statusCode":404}},"exit":1,"message":"Request to https://artifactregistry.googleapis.com/v1/projects/hongson-cisa/locations/us-central1/repositories/gcf-artifacts had HTTP Error: 404, Requested entity was not found.","status":404}
+[debug] [2026-01-29T03:19:17.830Z] Functions deploy failed.
+[debug] [2026-01-29T03:19:17.830Z] {
+  "endpoint": {
+    "id": "gradeExamBatch",
+    "project": "hongson-cisa",
+    "region": "us-central1",
+    "entryPoint": "gradeExamBatch",
+    "platform": "gcfv2",
+    "runtime": "nodejs24",
+    "callableTrigger": {},
+    "labels": {
+      "deployment-tool": "cli-firebase"
+    },
+    "serviceAccount": null,
+    "ingressSettings": null,
+    "availableMemoryMb": 1024,
+    "timeoutSeconds": 300,
+    "maxInstances": null,
+    "minInstances": null,
+    "concurrency": 80,
+    "vpc": null,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"hongson-cisa\",\"storageBucket\":\"hongson-cisa.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "hongson-cisa",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/hongson-cisa/locations/us-central1/services/gradeExamBatch"
+    },
+    "codebase": "default",
+    "cpu": 1,
+    "targetedByOnly": false,
+    "hash": "5302377f4337b3a2968afb5c5656cb3dd1ff53ab"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "context": {
+      "function": "projects/hongson-cisa/locations/us-central1/functions/gradeExamBatch"
+    },
+    "exit": 1,
+    "message": "Failed to create function projects/hongson-cisa/locations/us-central1/functions/gradeExamBatch",
+    "original": {
+      "name": "FirebaseError",
+      "children": [],
+      "context": {
+        "body": {
+          "error": {
+            "code": 500,
+            "message": "Could not create Cloud Run service gradeexambatch. The service has encountered an internal error. Please try again later",
+            "status": "INTERNAL"
+          }
+        },
+        "response": {
+          "statusCode": 500
+        }
+      },
+      "exit": 2,
+      "message": "Request to https://cloudfunctions.googleapis.com/v2/projects/hongson-cisa/locations/us-central1/functions?functionId=gradeExamBatch had HTTP Error: 500, Could not create Cloud Run service gradeexambatch. The service has encountered an internal error. Please try again later",
+      "status": 500
+    },
+    "status": 500,
+    "code": 500
+  }
+}
+[debug] [2026-01-29T03:19:17.875Z] Error: Failed to create function gradeExamBatch in region us-central1
+    at C:\Users\PHYSICS COOLNUT\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\release\fabricator.js:319:27
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async Fabricator.createV2Function (C:\Users\PHYSICS COOLNUT\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\release\fabricator.js:298:30)
+    at async Fabricator.createEndpoint (C:\Users\PHYSICS COOLNUT\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\release\fabricator.js:138:13)
+    at async handle (C:\Users\PHYSICS COOLNUT\AppData\Roaming\npm\node_modules\firebase-tools\lib\deploy\functions\release\fabricator.js:90:17)
+[error] 
+[error] Error: There was an error deploying functions

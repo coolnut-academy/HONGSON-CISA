@@ -1,0 +1,29 @@
+[debug] [2026-01-29T03:38:06.274Z] ----------------------------------------------------------------------
+[debug] [2026-01-29T03:38:06.278Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\PHYSICS COOLNUT\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2026-01-29T03:38:06.278Z] CLI Version:   15.4.0
+[debug] [2026-01-29T03:38:06.278Z] Platform:      win32
+[debug] [2026-01-29T03:38:06.278Z] Node Version:  v24.13.0
+[debug] [2026-01-29T03:38:06.278Z] Time:          Thu Jan 29 2026 10:38:06 GMT+0700 (เวลาอินโดจีน)
+[debug] [2026-01-29T03:38:06.279Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-01-29T03:38:08.504Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-01-29T03:38:08.504Z] > authorizing via signed-in user (satitsiriwach@gmail.com)
+[debug] [2026-01-29T03:38:08.505Z] [iam] checking project hongson-cisa for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-01-29T03:38:08.506Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:38:08.506Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:38:08.507Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions [none]
+[debug] [2026-01-29T03:38:08.507Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions x-goog-quota-user=projects/hongson-cisa
+[debug] [2026-01-29T03:38:08.507Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-01-29T03:38:09.783Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions 200
+[debug] [2026-01-29T03:38:09.784Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/hongson-cisa:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2026-01-29T03:38:09.784Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:38:09.784Z] Checked if tokens are valid: true, expires at: 1769659583916
+[debug] [2026-01-29T03:38:09.784Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/hongson-cisa/serviceAccounts/hongson-cisa@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2026-01-29T03:38:09.784Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/hongson-cisa/serviceAccounts/hongson-cisa@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2026-01-29T03:38:11.447Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/hongson-cisa/serviceAccounts/hongson-cisa@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2026-01-29T03:38:11.447Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/hongson-cisa/serviceAccounts/hongson-cisa@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'hongson-cisa'...
+[info] 
+[info] i  deploying functions 
+[info] Running command: npm --prefix "$RESOURCE_DIR" run build
