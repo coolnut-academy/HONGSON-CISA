@@ -43,7 +43,7 @@ interface ExamWithStatus extends Exam {
 
 export default function StudentDashboard() {
     const { isLoading: isAuthLoading } = useRoleProtection(['student']);
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
 
     const [examsByCompetency, setExamsByCompetency] = useState<Record<string, ExamWithStatus[]>>({});
     const [loadingData, setLoadingData] = useState(true);
@@ -119,13 +119,21 @@ export default function StudentDashboard() {
         <div className="space-y-10 pb-20">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
-                <div className="relative z-10">
-                    <h1 className="text-3xl font-bold mb-2">
-                        สวัสดี, {user?.firstName ? user.firstName : (user?.email?.split('@')[0] || "นักเรียน")}!
-                    </h1>
-                    <p className="text-blue-100 text-lg flex items-center gap-2">
-                        ติดตามความคืบหน้าและเริ่มทำแบบทดสอบสมรรถนะของคุณได้ที่นี่
-                    </p>
+                <div className="relative z-10 flex justify-between items-start">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">
+                            สวัสดี, {user?.firstName ? user.firstName : (user?.email?.split('@')[0] || "นักเรียน")}!
+                        </h1>
+                        <p className="text-blue-100 text-lg flex items-center gap-2">
+                            ติดตามความคืบหน้าและเริ่มทำแบบทดสอบสมรรถนะของคุณได้ที่นี่
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => logout()}
+                        className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-xl text-white text-sm font-medium transition-all"
+                    >
+                        ออกจากระบบ
+                    </button>
                 </div>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
             </div>

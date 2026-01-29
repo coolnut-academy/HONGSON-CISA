@@ -4,21 +4,34 @@ import { useRoleProtection } from "@/hooks/useRoleProtection";
 import Link from "next/link";
 import { ShieldCheck, Users, Cpu, UploadCloud } from "lucide-react";
 
+import { useAuth } from "@/context/AuthContext"; // Add import
+
 export default function SuperAdminDashboard() {
     const { isLoading } = useRoleProtection(['super_admin']);
+    const { logout } = useAuth(); // Destructure logout
 
     if (isLoading) return <div className="p-8">Loading...</div>;
 
     return (
         <div className="space-y-8">
             <div className="bg-gradient-to-br from-slate-800 to-black rounded-3xl p-8 text-white shadow-xl border border-slate-700">
-                <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
-                    <ShieldCheck className="w-8 h-8 text-purple-400" />
-                    System Control Center
-                </h1>
-                <p className="text-slate-400">
-                    Full access system administration and configuration.
-                </p>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
+                            <ShieldCheck className="w-8 h-8 text-purple-400" />
+                            System Control Center
+                        </h1>
+                        <p className="text-slate-400">
+                            Full access system administration and configuration.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => logout()}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-sm font-medium transition-all border border-white/10"
+                    >
+                        Logout
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -24,7 +24,7 @@ interface ExamProgress extends Exam {
 
 export default function GeneralDashboard() {
     const { isLoading: isAuthLoading } = useRoleProtection(['general_user']);
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
 
     const [exams, setExams] = useState<ExamProgress[]>([]);
     const [loadingData, setLoadingData] = useState(true);
@@ -92,13 +92,21 @@ export default function GeneralDashboard() {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 md:p-10 font-sans">
 
             {/* Header */}
-            <div className="max-w-6xl mx-auto mb-12">
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                    ศูนย์การประเมินสมรรถนะ (Assessment Center)
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400">
-                    ยินดีต้อนรับ, {user?.firstName}. ติดตามความก้าวหน้าทางสมรรถนะของคุณและรับเกียรติบัตรได้ที่นี่
-                </p>
+            <div className="max-w-6xl mx-auto mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+                        ศูนย์การประเมินสมรรถนะ (Assessment Center)
+                    </h1>
+                    <p className="text-slate-500 dark:text-slate-400">
+                        ยินดีต้อนรับ, {user?.firstName}. ติดตามความก้าวหน้าทางสมรรถนะของคุณและรับเกียรติบัตรได้ที่นี่
+                    </p>
+                </div>
+                <button
+                    onClick={() => logout()}
+                    className="px-6 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-xl text-slate-700 dark:text-slate-300 text-sm font-medium transition-all"
+                >
+                    ออกจากระบบ
+                </button>
             </div>
 
             <div className="max-w-6xl mx-auto grid gap-6">

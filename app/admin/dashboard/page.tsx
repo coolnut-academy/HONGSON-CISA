@@ -6,7 +6,7 @@ import { PlusCircle, FileText, Settings, Users, ArrowRight } from "lucide-react"
 
 export default function AdminDashboard() {
     const { isLoading } = useRoleProtection(['admin', 'super_admin']);
-    const { user } = useAuth();
+    const { user, logout } = useAuth(); // Destructure logout
 
     if (isLoading) return <div className="p-8">Loading...</div>;
 
@@ -14,12 +14,22 @@ export default function AdminDashboard() {
         <div className="space-y-8">
             <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full bg-blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <h1 className="text-3xl font-bold mb-2 relative z-10">
-                    Admin Panel
-                </h1>
-                <p className="text-slate-400 text-lg relative z-10">
-                    Managing: <span className="text-emerald-400 font-semibold">{user?.assignedCompetency || "General"}</span>
-                </p>
+                <div className="relative z-10 flex justify-between items-start">
+                    <div>
+                        <h1 className="text-3xl font-bold mb-2">
+                            Admin Panel
+                        </h1>
+                        <p className="text-slate-400 text-lg">
+                            Managing: <span className="text-emerald-400 font-semibold">{user?.assignedCompetency || "General"}</span>
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => logout()}
+                        className="px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-lg text-sm font-medium transition-all border border-white/10"
+                    >
+                        Logout
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
