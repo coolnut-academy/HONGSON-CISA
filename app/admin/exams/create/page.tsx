@@ -389,14 +389,14 @@ export default function CreateExamPage() {
                         <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 text-[var(--accent-success)]">
                             <FileText size={20} />
                         </div>
-                        <h2 className="text-lg font-semibold text-[var(--text-primary)]">สิ่งเร้า (Stimulus)</h2>
+                        <h2 className="text-lg font-semibold text-[var(--text-primary)]">สถานการณ์/ข้อมูลตั้งต้น(Stimulus)</h2>
                         <GlassBadge variant="secondary">PISA-Style</GlassBadge>
                     </div>
 
                     {/* Media Type Toggle */}
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-[var(--text-secondary)] mb-3">
-                            ประเภทสิ่งเร้า
+                            ประเภท สถานการณ์/ข้อมูลตั้งต้น(Stimulus)
                         </label>
                         <div className="flex gap-3">
                             <button
@@ -435,7 +435,7 @@ export default function CreateExamPage() {
                     {/* Conditional Content */}
                     {formData.mediaType === 'text' ? (
                         <GlassTextarea
-                            label="สถานการณ์/เนื้อหากระตุ้น"
+                            label="สถานการณ์/ข้อมูลตั้งต้น"
                             name="scenario"
                             value={formData.scenario}
                             onChange={handleChange}
@@ -592,7 +592,7 @@ export default function CreateExamPage() {
                             <p className="text-2xl font-bold text-[var(--text-primary)] capitalize">
                                 {formData.mediaType === 'text' ? 'Text' : 'Sim'}
                             </p>
-                            <p className="text-xs text-[var(--text-tertiary)]">ประเภทสิ่งเร้า</p>
+                            <p className="text-xs text-[var(--text-tertiary)]">ประเภทสถานการณ์/ข้อมูลตั้งต้น(stimulus)</p>
                         </div>
                         <div className="p-4 rounded-xl bg-[var(--glass-bg)]">
                             <p className="text-2xl font-bold text-emerald-500">✓</p>
