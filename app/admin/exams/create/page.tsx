@@ -6,16 +6,20 @@ import { useAuth } from "@/context/AuthContext";
 import { useRoleProtection } from "@/hooks/useRoleProtection";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { Loader2, Save, ArrowLeft } from "lucide-react";
+import { Loader2, Save, ArrowLeft, FileText, Cpu } from "lucide-react";
 import Link from "next/link";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { GlassInput, GlassTextarea, GlassSelect } from "@/components/ui/GlassInput";
+import { GlassButton } from "@/components/ui/GlassButton";
+import { GlassBadge } from "@/components/ui/GlassBadge";
 
 const COMPETENCIES = [
-    "1. Scientific Explanations",
-    "2. Data Interpretation",
-    "3. Inquiry Design",
-    "4. Argumentation",
-    "5. Societal Implications",
-    "6. Nature of Science"
+    { value: "1. อธิบายหลักการทางวิทยาศาสตร์", label: "1. อธิบายหลักการทางวิทยาศาสตร์" },
+    { value: "2. การแปลความหมายข้อมูล", label: "2. การแปลความหมายข้อมูล" },
+    { value: "3. การออกแบบการสืบค้น", label: "3. การออกแบบการสืบค้น" },
+    { value: "4. การให้เหตุผลโต้แย้ง", label: "4. การให้เหตุผลโต้แย้ง" },
+    { value: "5. ผลกระทบต่อสังคม", label: "5. ผลกระทบต่อสังคม" },
+    { value: "6. ธรรมชาติของวิทยาศาสตร์", label: "6. ธรรมชาติของวิทยาศาสตร์" },
 ];
 
 export default function CreateExamPage() {
@@ -33,14 +37,12 @@ export default function CreateExamPage() {
         isActive: true
     });
 
-    // Pre-fill competency based on user role
     useEffect(() => {
         if (user) {
             if (user.role === 'admin' && user.assignedCompetency) {
                 setFormData(prev => ({ ...prev, competency: user.assignedCompetency! }));
             } else if (user.role === 'super_admin' && !formData.competency) {
-                // Default to first one or keep empty for super admin to choose
-                setFormData(prev => ({ ...prev, competency: COMPETENCIES[0] }));
+                setFormData(prev => ({ ...prev, competency: COMPETENCIES[0].value }));
             }
         }
     }, [user]);
@@ -63,11 +65,9 @@ export default function CreateExamPage() {
                 createdAt: serverTimestamp(),
             });
 
-            alert("Exam created successfully!");
             router.push("/admin/dashboard");
         } catch (error) {
             console.error("Error creating exam:", error);
-            alert("Failed to create exam. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
@@ -75,146 +75,139 @@ export default function CreateExamPage() {
 
     if (isLoading || !isAuthorized) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <Loader2 className="animate-spin text-blue-600" size={48} />
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="animate-spin text-[var(--accent-primary)]" size={48} />
             </div>
         );
     }
 
-    // Determine if competency selection is disabled
     const isCompetencyDisabled = user?.role === 'admin';
 
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4">
-            <div className="mb-8">
-                <Link href="/admin/dashboard" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 flex items-center gap-2 mb-4 transition-colors">
-                    <ArrowLeft size={20} /> Back to Dashboard
+        <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header */}
+            <div className="flex items-center gap-4">
+                <Link 
+                    href="/admin/dashboard" 
+                    className="p-2 rounded-xl hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+                >
+                    <ArrowLeft size={24} />
                 </Link>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Create New Exam</h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-2">Design a new competency-based assessment scenario.</p>
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">สร้างข้อสอบใหม่</h1>
+                    <p className="text-[var(--text-secondary)]">ออกแบบสถานการณ์และคำถามสำหรับประเมินสมรรถนะ</p>
+                </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8 bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
+            <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Basic Info */}
+                <GlassCard hover={false}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 text-[var(--accent-primary)]">
+                            <FileText size={20} />
+                        </div>
+                        <h2 className="text-lg font-semibold text-[var(--text-primary)]">ข้อมูลพื้นฐาน</h2>
+                    </div>
 
-                {/* Title & Competency */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            Exam Title <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            required
-                            type="text"
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <GlassInput
+                            label="ชื่อข้อสอบ"
                             name="title"
                             value={formData.title}
                             onChange={handleChange}
-                            placeholder="e.g., Global Warming Analysis"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            placeholder="เช่น วิเคราะห์ภาวะโลกร้อน"
+                            required
                         />
-                    </div>
 
-                    <div className="space-y-2">
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                            Target Competency <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                            <select
-                                required
+                        <div className="space-y-2">
+                            <GlassSelect
+                                label="สมรรถนะที่ต้องการวัด"
                                 name="competency"
                                 value={formData.competency}
                                 onChange={handleChange}
                                 disabled={isCompetencyDisabled}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none disabled:opacity-60 disabled:cursor-not-allowed"
-                            >
-                                {COMPETENCIES.map((comp) => (
-                                    <option key={comp} value={comp}>
-                                        {comp}
-                                    </option>
-                                ))}
-                            </select>
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </div>
+                                options={COMPETENCIES}
+                                required
+                            />
+                            {isCompetencyDisabled && (
+                                <p className="text-xs text-[var(--text-tertiary)] flex items-center gap-1">
+                                    <GlassBadge variant="warning">ล็อก</GlassBadge>
+                                    ตามสมรรถนะที่ได้รับมอบหมาย
+                                </p>
+                            )}
                         </div>
-                        {isCompetencyDisabled && (
-                            <p className="text-xs text-slate-500">Locked to your assigned competency.</p>
-                        )}
                     </div>
-                </div>
+                </GlassCard>
 
-                {/* Scenario */}
-                <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Scenario / Stimulus Material <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                        required
-                        name="scenario"
-                        value={formData.scenario}
-                        onChange={handleChange}
-                        rows={8}
-                        placeholder="Describe the scientific phenomenon, experiment, or situation..."
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y font-mono text-sm leading-relaxed"
-                    />
-                </div>
+                {/* Scenario & Question */}
+                <GlassCard hover={false}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 text-[var(--accent-success)]">
+                            <FileText size={20} />
+                        </div>
+                        <h2 className="text-lg font-semibold text-[var(--text-primary)]">เนื้อหาข้อสอบ</h2>
+                    </div>
 
-                {/* Question */}
-                <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
-                        Assessment Question <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                        required
-                        name="question"
-                        value={formData.question}
-                        onChange={handleChange}
-                        rows={3}
-                        placeholder="What should the student answer?"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y"
-                    />
-                </div>
+                    <div className="space-y-6">
+                        <GlassTextarea
+                            label="สถานการณ์/เนื้อหากระตุ้น"
+                            name="scenario"
+                            value={formData.scenario}
+                            onChange={handleChange}
+                            rows={8}
+                            placeholder="อธิบายปรากฏการณ์ทางวิทยาศาสตร์ การทดลอง หรือสถานการณ์ที่นักเรียนจะต้องวิเคราะห์..."
+                            required
+                        />
 
-                {/* Grading Rubric */}
-                <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                        AI Grading Prompt
-                        <span className="text-xs font-normal text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">Internal Use</span>
-                    </label>
-                    <textarea
-                        required
+                        <GlassTextarea
+                            label="คำถามสำหรับประเมิน"
+                            name="question"
+                            value={formData.question}
+                            onChange={handleChange}
+                            rows={3}
+                            placeholder="คำถามที่ต้องการให้นักเรียนตอบ..."
+                            required
+                        />
+                    </div>
+                </GlassCard>
+
+                {/* AI Rubric */}
+                <GlassCard hover={false}>
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 text-[var(--accent-secondary)]">
+                            <Cpu size={20} />
+                        </div>
+                        <h2 className="text-lg font-semibold text-[var(--text-primary)]">เกณฑ์การตรวจ AI</h2>
+                        <GlassBadge variant="secondary">ใช้ภายใน</GlassBadge>
+                    </div>
+
+                    <GlassTextarea
+                        label="คำสั่งสำหรับ AI ให้คะแนน"
                         name="rubricPrompt"
                         value={formData.rubricPrompt}
                         onChange={handleChange}
                         rows={4}
-                        placeholder="Instructions for the AI: 'Award full points if the student mentions momentum conservation...'"
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all resize-y"
+                        placeholder="คำแนะนำสำหรับ AI: เช่น 'ให้คะแนนเต็ม 10 ถ้านักเรียนกล่าวถึงการอนุรักษ์โมเมนตัม และอธิบายหลักการได้ถูกต้อง...'"
+                        hint="คำสั่งนี้จะถูกส่งให้ AI เพื่อใช้ในการตรวจและให้คะแนนคำตอบของนักเรียน"
+                        required
                     />
-                </div>
+                </GlassCard>
 
-                <div className="pt-4 flex items-center justify-end gap-4">
-                    <Link
-                        href="/admin/dashboard"
-                        className="px-6 py-3 rounded-xl text-slate-600 dark:text-slate-400 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                    >
-                        Cancel
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-4 pt-4">
+                    <Link href="/admin/dashboard">
+                        <GlassButton variant="ghost" type="button">
+                            ยกเลิก
+                        </GlassButton>
                     </Link>
-                    <button
+                    <GlassButton
                         type="submit"
-                        disabled={isSubmitting}
-                        className="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg shadow-blue-500/30 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                        variant="primary"
+                        loading={isSubmitting}
+                        icon={<Save size={18} />}
                     >
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="animate-spin w-5 h-5" />
-                                Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="w-5 h-5" />
-                                Create Exam
-                            </>
-                        )}
-                    </button>
+                        สร้างข้อสอบ
+                    </GlassButton>
                 </div>
             </form>
         </div>

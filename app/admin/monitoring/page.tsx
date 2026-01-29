@@ -11,8 +11,8 @@ export default function AdminMonitoringPage() {
 
     return (
         <FeaturePlaceholder
-            title="Live Exam Monitoring"
-            description="Real-time dashboard to watch student progress, flag issues, and control exam sessions remotely."
+            title="ตรวจสอบข้อสอบสด"
+            description="แดชบอร์ดเรียลไทม์สำหรับติดตามความคืบหน้าของนักเรียน แจ้งเตือนปัญหา และควบคุมการสอบจากระยะไกล"
             icon={Activity}
             role="admin"
         />

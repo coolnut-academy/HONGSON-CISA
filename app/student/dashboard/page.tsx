@@ -13,7 +13,10 @@ import {
     Clock,
     CheckCircle2,
     Loader2,
+    Sparkles,
 } from "lucide-react";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { GlassBadge } from "@/components/ui/GlassBadge";
 
 // The 6 Competency Categories in order - Mapped to Display Names if needed, 
 // but using the Database keys for lookup to match exam.competency
@@ -110,7 +113,7 @@ export default function StudentDashboard() {
     if (isAuthLoading || loadingData) {
         return (
             <div className="flex justify-center items-center py-20">
-                <Loader2 className="animate-spin text-blue-600 w-10 h-10" />
+                <Loader2 className="animate-spin text-[var(--accent-primary)] w-10 h-10" />
             </div>
         );
     }
@@ -118,66 +121,69 @@ export default function StudentDashboard() {
     return (
         <div className="space-y-10 pb-20">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
-                <div className="relative z-10 flex justify-between items-start">
-                    <div>
-                        <h1 className="text-3xl font-bold mb-2">
-                            สวัสดี, {user?.firstName ? user.firstName : (user?.email?.split('@')[0] || "นักเรียน")}!
-                        </h1>
-                        <p className="text-blue-100 text-lg flex items-center gap-2">
-                            ติดตามความคืบหน้าและเริ่มทำแบบทดสอบสมรรถนะของคุณได้ที่นี่
-                        </p>
+            <GlassCard padding="lg" hover={false} className="relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-blue-500/20 to-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-cyan-500/10 to-transparent rounded-full blur-2xl translate-y-1/2 -translate-x-1/4 pointer-events-none" />
+                
+                <div className="relative z-10">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <div className="flex items-center gap-3 mb-3">
+                                <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
+                                    สวัสดี, {user?.firstName ? user.firstName : (user?.email?.split('@')[0] || "นักเรียน")}!
+                                </h1>
+                                <GlassBadge variant="primary" icon={<Sparkles size={12} />}>
+                                    {user?.classRoom ? `ม.${user.classRoom}` : "นักเรียน"}
+                                </GlassBadge>
+                            </div>
+                            <p className="text-[var(--text-secondary)] text-lg">
+                                ติดตามความคืบหน้าและเริ่มทำแบบทดสอบสมรรถนะของคุณได้ที่นี่
+                            </p>
+                        </div>
                     </div>
-                    <button
-                        onClick={() => logout()}
-                        className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30 rounded-xl text-white text-sm font-medium transition-all"
-                    >
-                        ออกจากระบบ
-                    </button>
                 </div>
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-            </div>
+            </GlassCard>
 
             {/* Competency Categories */}
             <div className="space-y-12">
                 {COMPETENCIES.map((category) => (
                     <div key={category} className="scroll-mt-24" id={category.replace(/\s+/g, '-').toLowerCase()}>
-                        <div className="flex items-center gap-3 mb-6 border-b border-slate-200 dark:border-slate-800 pb-3">
-                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg">
+                        <div className="flex items-center gap-3 mb-6 border-b border-[var(--glass-border-subtle)] pb-3">
+                            <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 text-[var(--accent-primary)]">
                                 <BookOpen size={20} />
                             </div>
-                            <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+                            <h2 className="text-xl font-bold text-[var(--text-primary)]">
                                 {COMP_DISPLAY_TH[category] || category}
                             </h2>
-                            <span className="ml-auto text-xs font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-full">
+                            <GlassBadge className="ml-auto">
                                 {examsByCompetency[category]?.length || 0} แบบทดสอบ
-                            </span>
+                            </GlassBadge>
                         </div>
 
                         {/* Exam Grid */}
                         {!examsByCompetency[category] || examsByCompetency[category].length === 0 ? (
-                            <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-8 text-center border border-dashed border-slate-200 dark:border-slate-800">
-                                <p className="text-slate-400 dark:text-slate-500 font-medium">ยังไม่มีแบบทดสอบที่เปิดใช้งานในขณะนี้</p>
-                            </div>
+                            <GlassCard hover={false} className="text-center border-dashed">
+                                <p className="text-[var(--text-tertiary)] font-medium">ยังไม่มีแบบทดสอบที่เปิดใช้งานในขณะนี้</p>
+                            </GlassCard>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {examsByCompetency[category].map((exam) => (
-                                    <div
+                                    <GlassCard
                                         key={exam.id}
-                                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 hover:shadow-lg transition-all duration-300 flex flex-col group relative overflow-hidden"
+                                        className="flex flex-col group relative overflow-hidden"
                                     >
                                         {/* Card Status Indicator Border */}
-                                        <div className={`absolute top-0 left-0 w-1 h-full 
-                        ${!exam.submission ? 'bg-blue-500' :
-                                                exam.submission.status === 'pending' ? 'bg-amber-400' :
-                                                    exam.submission.status === 'graded' ? 'bg-emerald-500' : 'bg-slate-300'}
-                     `} />
+                                        <div className={`absolute top-0 left-0 w-1 h-full rounded-l-full
+                                            ${!exam.submission ? 'bg-[var(--accent-primary)]' :
+                                                exam.submission.status === 'pending' ? 'bg-[var(--accent-warning)]' :
+                                                    exam.submission.status === 'graded' ? 'bg-[var(--accent-success)]' : 'bg-[var(--text-tertiary)]'}
+                                        `} />
 
                                         <div className="flex-1 mb-6 pl-2">
-                                            <h3 className="font-semibold text-lg text-slate-900 dark:text-white mb-2 line-clamp-2" title={exam.title}>
+                                            <h3 className="font-semibold text-lg text-[var(--text-primary)] mb-2 line-clamp-2" title={exam.title}>
                                                 {exam.title}
                                             </h3>
-                                            <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed">
+                                            <p className="text-sm text-[var(--text-secondary)] line-clamp-3 leading-relaxed">
                                                 {exam.scenario}
                                             </p>
                                         </div>
@@ -186,24 +192,22 @@ export default function StudentDashboard() {
                                             {!exam.submission ? (
                                                 <Link
                                                     href={`/student/exam/${exam.id}`}
-                                                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all shadow-md shadow-blue-500/20 group-hover:scale-[1.02]"
+                                                    className="btn-glass btn-primary w-full"
                                                 >
                                                     <PlayCircle size={18} /> เริ่มทำแบบทดสอบ
                                                 </Link>
                                             ) : exam.submission.status === 'pending' ? (
-                                                <div className="w-full flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-medium py-3 rounded-xl border border-amber-100 dark:border-amber-800">
+                                                <div className="w-full flex items-center justify-center gap-2 badge-glass badge-warning py-3 px-4">
                                                     <Clock size={18} /> รอการตรวจผล
                                                 </div>
                                             ) : (
-                                                <div className="flex flex-col gap-2">
-                                                    <div className="w-full flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold py-3 px-4 rounded-xl border border-emerald-100 dark:border-emerald-800">
-                                                        <span className="flex items-center gap-2 text-sm"><CheckCircle2 size={18} /> ตรวจแล้ว</span>
-                                                        <span className="text-lg">{exam.submission.score}/10</span>
-                                                    </div>
+                                                <div className="w-full flex items-center justify-between badge-glass badge-success py-3 px-4">
+                                                    <span className="flex items-center gap-2 text-sm"><CheckCircle2 size={18} /> ตรวจแล้ว</span>
+                                                    <span className="text-lg font-bold">{exam.submission.score}/10</span>
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
+                                    </GlassCard>
                                 ))}
                             </div>
                         )}
