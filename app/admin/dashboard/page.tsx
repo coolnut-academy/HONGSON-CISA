@@ -99,24 +99,6 @@ export default function AdminDashboard() {
                             </div>
                         </GlassCard>
                     </Link>
-
-                    {/* Students Import Card */}
-                    <Link href="/admin/students/import" className="group">
-                        <GlassCard className="h-full flex flex-col">
-                            <div className="p-3 w-fit rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-500/5 text-[var(--accent-secondary)] mb-4 group-hover:scale-110 transition-transform">
-                                <FileText className="w-6 h-6" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-[var(--text-primary)] mb-2">
-                                นำเข้าข้อมูลนักเรียน
-                            </h3>
-                            <p className="text-[var(--text-secondary)] text-sm mb-4 flex-1">
-                                นำเข้าข้อมูลนักเรียนจำนวนมากด้วยไฟล์ CSV
-                            </p>
-                            <div className="flex items-center text-[var(--accent-secondary)] text-sm font-medium opacity-0 group-hover:opacity-100 transition-all transform -translate-x-2 group-hover:translate-x-0">
-                                จัดการข้อมูล <ArrowRight className="w-4 h-4 ml-1" />
-                            </div>
-                        </GlassCard>
-                    </Link>
                 </div>
             </div>
         </div>

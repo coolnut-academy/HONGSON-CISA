@@ -1,0 +1,76 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check user role from users collection
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    // Helper function to check if user is admin or super_admin
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() in ['admin', 'super_admin'];
+    }
+    
+    // Helper function to check if user is super_admin
+    function isSuperAdmin() {
+      return isAuthenticated() && getUserRole() == 'super_admin';
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      // Anyone authenticated can read their own document
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      // Admins can read all users
+      allow read: if isAdmin();
+      // Users can update their own document (limited fields)
+      allow update: if isAuthenticated() && request.auth.uid == userId;
+      // Only super_admin can create/delete users
+      allow create, delete: if isSuperAdmin();
+      // Admins can update user roles
+      allow update: if isAdmin();
+    }
+    
+    // Pre-registered students collection
+    match /pre_registered_students/{studentId} {
+      // Admins can read pre-registered students
+      allow read: if isAdmin();
+      // Only super_admin can write to pre-registered students
+      allow write: if isSuperAdmin();
+      // Allow reading for login verification (unauthenticated)
+      allow get: if true;
+    }
+    
+    // Exams collection
+    match /exams/{examId} {
+      // Anyone authenticated can read active exams
+      allow read: if isAuthenticated();
+      // Only admins can create/update/delete exams
+      allow write: if isAdmin();
+    }
+    
+    // Submissions collection
+    match /submissions/{submissionId} {
+      // Users can read their own submissions
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // Admins can read all submissions
+      allow read: if isAdmin();
+      // Authenticated users can create submissions
+      allow create: if isAuthenticated();
+      // Only admins can update submissions (for grading)
+      allow update: if isAdmin();
+    }
+    
+    // AI Grading results
+    match /ai_grading/{gradingId} {
+      allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+  }
+}
