@@ -58,13 +58,13 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-4">
               <Link href="/login" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                Sign In
+                เข้าสู่ระบบ
               </Link>
               <Link
                 href="/login"
                 className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-all shadow-md hover:shadow-lg shadow-blue-500/20"
               >
-                Get Started
+                เริ่มต้นใช้งาน
               </Link>
             </div>
           </div>
@@ -85,11 +85,11 @@ export default function Home() {
           </div>
 
           <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-8 bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
-            Elevate Student Competency <br className="hidden md:block" /> with Precision.
+            ระบบวัดและประเมินผลสมรรถนะผู้เรียน <br className="hidden md:block" /> (Hongson-CISA)
           </h1>
 
           <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            A comprehensive platform inspired by PISA standards. Measure, analyze, and improve student performance through data-driven insights.
+            การประเมินสมรรถนะตามแนวทาง PISA เพื่อพัฒนาศักยภาพผู้เรียนสู่ระดับสากล วิเคราะห์ผลแม่นยำด้วย AI
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -97,11 +97,11 @@ export default function Home() {
               href="/login"
               className="w-full sm:w-auto px-8 py-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 group"
             >
-              Start Assessment
+              เริ่มทำแบบทดสอบ
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-              View Demo
+              ดูตัวอย่างระบบ
             </button>
           </div>
         </div>
@@ -115,27 +115,27 @@ export default function Home() {
               <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-6">
                 <Zap className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Real-time Analytics</h3>
+              <h3 className="text-xl font-bold mb-3">ผลตอบรับทันที (Real-time Feedback)</h3>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Instant feedback and detailed performance metrics to track student progress effectively.
+                ทราบผลคะแนนและได้รับข้อเสนอแนะในการพัฒนาตนเองทันทีหลังส่งคำตอบ
               </p>
             </div>
             <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-shadow duration-300">
               <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-6">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3">PISA Standards</h3>
+              <h3 className="text-xl font-bold mb-3">มาตรฐาน PISA</h3>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Aligned with international assessment frameworks to ensure global competitiveness.
+                ข้อสอบและเกณฑ์การวัดผลที่สอดคล้องกับมาตรฐาน PISA เพื่อเตรียมความพร้อมสู่การแข่งขันระดับโลก
               </p>
             </div>
             <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-shadow duration-300">
               <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-6">
                 <Lock className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold mb-3">Secure & Scalable</h3>
+              <h3 className="text-xl font-bold mb-3">มั่นคงปลอดภัย</h3>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Enterprise-grade security with role-based access control and scalable architecture.
+                ระบบจัดการข้อมูลที่ปลอดภัย ออกแบบมาเพื่อรองรับผู้ใช้งานจำนวนมาก
               </p>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function Home() {
 
       <footer className="py-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 text-center text-slate-500">
-          <p>© 2026 Hongson-CISA. All rights reserved.</p>
+          <p>© 2026 Hongson-CISA. สงวนลิขสิทธิ์.</p>
         </div>
       </footer>
     </div>

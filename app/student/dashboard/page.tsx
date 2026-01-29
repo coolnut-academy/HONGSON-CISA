@@ -12,20 +12,30 @@ import {
     PlayCircle,
     Clock,
     CheckCircle2,
-    AlertCircle,
     Loader2,
-    ChevronRight
 } from "lucide-react";
 
-// The 6 Competency Categories in order
+// The 6 Competency Categories in order - Mapped to Display Names if needed, 
+// but using the Database keys for lookup to match exam.competency
 const COMPETENCIES = [
-    "1. Scientific Explanations",
-    "2. Data Interpretation",
-    "3. Inquiry Design",
-    "4. Argumentation",
-    "5. Societal Implications",
-    "6. Nature of Science"
+    "Scientific Explanations",
+    "Data Interpretation",
+    "Inquiry Design",
+    "Argumentation",
+    "Societal Implications",
+    "Nature of Science"
 ];
+
+// Display text mapping
+const COMP_DISPLAY_TH: Record<string, string> = {
+    "Scientific Explanations": "1. การอธิบายเชิงวิทยาศาสตร์ (Scientific Explanations)",
+    "Data Interpretation": "2. การแปลความหมายข้อมูลและประจักษ์พยาน (Data Interpretation)",
+    "Inquiry Design": "3. การออกแบบและประเมินกระบวนการสืบเสาะ (Inquiry Design)",
+    "Argumentation": "4. การสร้างข้อโต้แย้งทางวิทยาศาสตร์ (Argumentation)",
+    "Societal Implications": "5. ผลกระทบของวิทยาศาสตร์ต่อสังคม (Societal Implications)",
+    "Nature of Science": "6. ธรรมชาติของวิทยาศาสตร์ (Nature of Science)"
+};
+
 
 interface ExamWithStatus extends Exam {
     submission?: Submission;
@@ -43,9 +53,7 @@ export default function StudentDashboard() {
             if (!user) return;
 
             try {
-                // 1. Fetch Active Exams - Order by createdAt descending to show newest first
-                // Note: You might need a composite index for 'isActive' + 'createdAt'. 
-                // If it fails, remove orderBy or create index in Firebase Console.
+                // 1. Fetch Active Exams
                 const examsQuery = query(
                     collection(db, "exams"),
                     where("isActive", "==", true),
@@ -74,10 +82,12 @@ export default function StudentDashboard() {
                     const userSubmission = submissionsList.find(sub => sub.examId === exam.id);
                     const examWithStatus = { ...exam, submission: userSubmission };
 
-                    if (processedExams[exam.competency]) {
-                        processedExams[exam.competency].push(examWithStatus);
+                    // Simple fuzzy matching or direct mapping
+                    const key = COMPETENCIES.find(c => exam.competency.includes(c)) || "Other";
+
+                    if (processedExams[key]) {
+                        processedExams[key].push(examWithStatus);
                     } else {
-                        // Fallback for exams with mismtached competency names
                         if (!processedExams["Other"]) processedExams["Other"] = [];
                         processedExams["Other"].push(examWithStatus);
                     }
@@ -111,10 +121,10 @@ export default function StudentDashboard() {
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-500/20 relative overflow-hidden">
                 <div className="relative z-10">
                     <h1 className="text-3xl font-bold mb-2">
-                        สวัสดี, {user?.firstName ? user.firstName : (user?.email?.split('@')[0] || "Student")}!
+                        สวัสดี, {user?.firstName ? user.firstName : (user?.email?.split('@')[0] || "นักเรียน")}!
                     </h1>
                     <p className="text-blue-100 text-lg flex items-center gap-2">
-                        Check your progress and take new assessments below.
+                        ติดตามความคืบหน้าและเริ่มทำแบบทดสอบสมรรถนะของคุณได้ที่นี่
                     </p>
                 </div>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
@@ -129,17 +139,17 @@ export default function StudentDashboard() {
                                 <BookOpen size={20} />
                             </div>
                             <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                                {category}
+                                {COMP_DISPLAY_TH[category] || category}
                             </h2>
                             <span className="ml-auto text-xs font-medium px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-full">
-                                {examsByCompetency[category]?.length || 0} Exams
+                                {examsByCompetency[category]?.length || 0} แบบทดสอบ
                             </span>
                         </div>
 
                         {/* Exam Grid */}
                         {!examsByCompetency[category] || examsByCompetency[category].length === 0 ? (
                             <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-8 text-center border border-dashed border-slate-200 dark:border-slate-800">
-                                <p className="text-slate-400 dark:text-slate-500 font-medium">No active exams in this category yet.</p>
+                                <p className="text-slate-400 dark:text-slate-500 font-medium">ยังไม่มีแบบทดสอบที่เปิดใช้งานในขณะนี้</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -170,19 +180,18 @@ export default function StudentDashboard() {
                                                     href={`/student/exam/${exam.id}`}
                                                     className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl transition-all shadow-md shadow-blue-500/20 group-hover:scale-[1.02]"
                                                 >
-                                                    <PlayCircle size={18} /> Start Exam
+                                                    <PlayCircle size={18} /> เริ่มทำแบบทดสอบ
                                                 </Link>
                                             ) : exam.submission.status === 'pending' ? (
                                                 <div className="w-full flex items-center justify-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 font-medium py-3 rounded-xl border border-amber-100 dark:border-amber-800">
-                                                    <Clock size={18} /> Waiting for Result
+                                                    <Clock size={18} /> รอการตรวจผล
                                                 </div>
                                             ) : (
                                                 <div className="flex flex-col gap-2">
                                                     <div className="w-full flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold py-3 px-4 rounded-xl border border-emerald-100 dark:border-emerald-800">
-                                                        <span className="flex items-center gap-2 text-sm"><CheckCircle2 size={18} /> Graded</span>
+                                                        <span className="flex items-center gap-2 text-sm"><CheckCircle2 size={18} /> ตรวจแล้ว</span>
                                                         <span className="text-lg">{exam.submission.score}/10</span>
                                                     </div>
-                                                    {/* Link to view results could go here later */}
                                                 </div>
                                             )}
                                         </div>

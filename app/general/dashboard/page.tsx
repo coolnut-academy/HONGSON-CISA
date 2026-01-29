@@ -94,10 +94,10 @@ export default function GeneralDashboard() {
             {/* Header */}
             <div className="max-w-6xl mx-auto mb-12">
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                    Assessment Center
+                    ศูนย์การประเมินสมรรถนะ (Assessment Center)
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400">
-                    Welcome, {user?.firstName}. Track your competency progress and earn certificates.
+                    ยินดีต้อนรับ, {user?.firstName}. ติดตามความก้าวหน้าทางสมรรถนะของคุณและรับเกียรติบัตรได้ที่นี่
                 </p>
             </div>
 
@@ -121,7 +121,7 @@ export default function GeneralDashboard() {
                             </p>
                             {exam.historyCount > 0 && (
                                 <p className="text-xs text-slate-400 mt-2">
-                                    Attempts: {exam.historyCount}
+                                    จำนวนครั้งที่ทำ: {exam.historyCount}
                                 </p>
                             )}
                         </div>
@@ -133,7 +133,7 @@ export default function GeneralDashboard() {
                             {exam.latestSubmission ? (
                                 exam.latestSubmission.status === 'pending' ? (
                                     <div className="px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 border border-amber-100 dark:border-amber-800 flex items-center justify-center gap-2">
-                                        <Clock size={16} /> Waiting for Result
+                                        <Clock size={16} /> รอการตรวจผลจาก AI
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-3">
@@ -145,13 +145,13 @@ export default function GeneralDashboard() {
                                             href={`/certificate/${exam.latestSubmission.id}`}
                                             className="px-4 py-2 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium hover:opacity-90 transition-opacity text-center text-sm"
                                         >
-                                            View Certificate
+                                            ดาวน์โหลดเกียรติบัตร
                                         </Link>
                                     </div>
                                 )
                             ) : (
                                 <div className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 text-sm italic text-center">
-                                    Not started
+                                    ยังไม่เริ่มทำ
                                 </div>
                             )}
 
@@ -160,7 +160,7 @@ export default function GeneralDashboard() {
                                 href={`/student/exam/${exam.id}`}
                                 className="px-5 py-2.5 rounded-xl border-2 border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-500 font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors flex items-center justify-center gap-2"
                             >
-                                {exam.latestSubmission ? <><RotateCcw size={18} /> Retake</> : 'Start Exam'}
+                                {exam.latestSubmission ? <><RotateCcw size={18} /> ทำแบบทดสอบอีกครั้ง</> : 'เริ่มทำแบบทดสอบ'}
                             </Link>
 
                         </div>
@@ -169,7 +169,7 @@ export default function GeneralDashboard() {
 
                 {exams.length === 0 && (
                     <div className="text-center py-20 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200">
-                        <p className="text-slate-400">No active exams available at the moment.</p>
+                        <p className="text-slate-400">ยังไม่มีแบบทดสอบที่เปิดใช้งานในขณะนี้</p>
                     </div>
                 )}
             </div>

@@ -39,7 +39,7 @@ export default function CertificatePage() {
 
                 // Only show if graded
                 if (subData.status !== "graded") {
-                    alert("Result is still pending.");
+                    alert("ผลการประเมินยังไม่เสร็จสิ้น (Pending Result)");
                     return;
                 }
 
@@ -90,16 +90,16 @@ export default function CertificatePage() {
 
         } catch (err) {
             console.error("Download failed:", err);
-            alert("Failed to generate PDF. Please try again.");
+            alert("ไม่สามารถสร้าง PDF ได้ โปรดลองอีกครั้ง (Failed to generate PDF)");
         } finally {
             setDownloading(false);
         }
     };
 
     const getLevelInfo = (score: number) => {
-        if (score >= 8) return { label: "GOLD LEVEL", color: "text-yellow-600", border: "border-yellow-400" };
-        if (score >= 5) return { label: "SILVER LEVEL", color: "text-slate-500", border: "border-slate-300" };
-        return { label: "BRONZE LEVEL", color: "text-amber-700", border: "border-amber-600" };
+        if (score >= 8) return { label: "ระดับสูง (Gold)", color: "text-yellow-600", border: "border-yellow-400" };
+        if (score >= 5) return { label: "ระดับกลาง (Silver)", color: "text-slate-500", border: "border-slate-300" };
+        return { label: "ระดับต้น (Bronze)", color: "text-amber-700", border: "border-amber-600" };
     };
 
     if (loading) {
@@ -109,7 +109,14 @@ export default function CertificatePage() {
     if (!submission || !exam) return null;
 
     const level = getLevelInfo(submission.score || 0);
-    const dateStr = submission.gradedAt?.toDate().toLocaleDateString("en-GB", { día: 'numeric', month: 'long', year: 'numeric' }) || new Date().toLocaleDateString();
+
+    // Thai Date Formatter
+    const dateObj = submission.gradedAt?.toDate() || new Date();
+    const dateStr = dateObj.toLocaleDateString("th-TH", {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric' // BE year automatically handled by th-TH locale in modern browsers, or add 543 if needed
+    });
 
     return (
         <div className="min-h-screen bg-slate-100 dark:bg-slate-900 py-10 px-4 flex flex-col items-center">
@@ -120,7 +127,7 @@ export default function CertificatePage() {
                     href={user?.role === 'general_user' ? "/general/dashboard" : "/student/dashboard"}
                     className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900"
                 >
-                    <ArrowLeft size={20} /> Back to Dashboard
+                    <ArrowLeft size={20} /> กลับหน้าหลัก
                 </Link>
                 <button
                     onClick={handleDownload}
@@ -128,7 +135,7 @@ export default function CertificatePage() {
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-blue-500/30 transition-all active:scale-95"
                 >
                     {downloading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
-                    Download PDF
+                    ดาวน์โหลดเกียรติบัตร (PDF)
                 </button>
             </div>
 
@@ -154,7 +161,7 @@ export default function CertificatePage() {
                         <p className="text-xl text-blue-600/60 uppercase tracking-[0.3em]">of Competency Achievement</p>
                     </div>
 
-                    <p className="text-lg text-slate-500 italic mb-6">This is to certify that</p>
+                    <p className="text-lg text-slate-500 italic mb-6">ขอมอบเกียรติบัตรฉบับนี้ให้ไว้เพื่อแสดงว่า</p>
 
                     <div className="mb-8 border-b-2 border-slate-300 px-12 py-2">
                         <h2 className={`text-4xl md:text-5xl font-serif font-bold ${level.color}`}>
@@ -163,32 +170,32 @@ export default function CertificatePage() {
                     </div>
 
                     <div className="space-y-4 mb-12">
-                        <p className="text-xl text-slate-600">Has successfully completed the assessment for</p>
+                        <p className="text-xl text-slate-600">ได้ผ่านการประเมินสมรรถนะในหัวข้อ</p>
                         <h3 className="text-3xl font-bold text-slate-800 max-w-2xl mx-auto leading-tight">{exam.title}</h3>
-                        <p className="text-lg text-slate-500">Demonstrating competency in <strong>{submission.competency}</strong></p>
+                        <p className="text-lg text-slate-500">สมรรถนะ: <strong>{submission.competency}</strong></p>
                     </div>
 
                     {/* Badge / Level */}
                     <div className={`mb-12 px-8 py-3 rounded-full border-2 ${level.border} ${level.color} bg-white inline-block`}>
                         <span className="font-bold tracking-widest text-xl">{level.label}</span>
                         <span className="mx-3 text-slate-300">|</span>
-                        <span className="font-medium">Score: {submission.score}/10</span>
+                        <span className="font-medium">คะแนน: {submission.score}/10</span>
                     </div>
 
                     {/* Footer: Date & Signature */}
                     <div className="w-full flex justify-between items-end px-12 mt-auto">
                         <div className="text-center">
                             <p className="text-lg font-bold text-slate-800 border-t border-slate-400 pt-2 px-8">{dateStr}</p>
-                            <p className="text-xs text-slate-400 uppercase mt-1">Date Issued</p>
+                            <p className="text-xs text-slate-400 uppercase mt-1">ให้ไว้ ณ วันที่</p>
                         </div>
 
                         <div className="text-right">
-                            <p className="text-xs text-slate-300 font-mono mb-6">ID: {submission.id}</p>
+                            <p className="text-xs text-slate-300 font-mono mb-6">Ref ID: {submission.id}</p>
                             <div className="text-center">
                                 {/* Mock Signature */}
                                 <p className="font-handwriting text-2xl text-blue-800 mb-1 px-8" style={{ fontFamily: 'cursive' }}>Satit S.</p>
                                 <p className="text-sm font-bold text-slate-800 border-t border-slate-400 pt-2">Mr. Satit Siriwach</p>
-                                <p className="text-xs text-slate-400 uppercase mt-1">System Administrator</p>
+                                <p className="text-xs text-slate-400 uppercase mt-1">ผู้ดูแลระบบสูงสุด (System Administrator)</p>
                             </div>
                         </div>
                     </div>

@@ -36,14 +36,14 @@ export default function ExamPage() {
                     if (data.isActive) {
                         setExam({ id: docSnap.id, ...data });
                     } else {
-                        setError("This exam is currently inactive.");
+                        setError("แบบทดสอบนี้ปิดใช้งานอยู่ในขณะนี้ (Inactive)");
                     }
                 } else {
-                    setError("Exam not found.");
+                    setError("ไม่พบแบบทดสอบ (Exam not found)");
                 }
             } catch (err) {
                 console.error("Error fetching exam:", err);
-                setError("Failed to load exam details.");
+                setError("เกิดข้อผิดพลาดในการโหลดข้อมูลแบบทดสอบ");
             } finally {
                 setLoadingExam(false);
             }
@@ -55,11 +55,11 @@ export default function ExamPage() {
     const handleSubmit = async () => {
         if (!user || !exam) return;
         if (!answer.trim()) {
-            alert("Please write an answer before submitting.");
+            alert("กรุณาพิมพ์คำตอบของท่านก่อนทำการส่ง (Please write an answer before submitting)");
             return;
         }
 
-        if (!confirm("Are you sure you want to submit your answer? This action cannot be undone.")) {
+        if (!confirm("คุณแน่ใจหรือไม่ที่จะส่งคำตอบ? เมื่อส่งแล้วจะไม่สามารถแก้ไขได้ (Are you sure you want to submit?)")) {
             return;
         }
 
@@ -85,11 +85,11 @@ export default function ExamPage() {
 
             await addDoc(collection(db, "submissions"), submissionData);
 
-            alert("Answer submitted successfully! Waiting for AI grading...");
+            alert("ส่งคำตอบสำเร็จ! ระบบกำลังรอการประเมินจาก AI... (Submitted successfully!)");
             router.push("/student/dashboard");
         } catch (err) {
             console.error("Error submitting answer:", err);
-            alert("Failed to submit answer. Please check your connection and try again.");
+            alert("เกิดข้อผิดพลาดในการส่่งคำตอบ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่อีกครั้ง (Failed to submit)");
         } finally {
             setIsSubmitting(false);
         }
@@ -99,7 +99,7 @@ export default function ExamPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900 gap-4">
                 <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-                <p className="text-slate-500 animate-pulse">Loading assessment...</p>
+                <p className="text-slate-500 animate-pulse">กำลังโหลดแบบทดสอบ...</p>
             </div>
         );
     }
@@ -111,13 +111,13 @@ export default function ExamPage() {
             <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-900 p-4">
                 <div className="text-center max-w-md bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
                     <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Unavailable</h1>
-                    <p className="text-slate-600 dark:text-slate-400 mb-6">{error || "Something went wrong."}</p>
+                    <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">ไม่สามารถเข้าถึงได้</h1>
+                    <p className="text-slate-600 dark:text-slate-400 mb-6">{error || "เกิดข้อผิดพลาดบางอย่าง"}</p>
                     <Link
                         href="/student/dashboard"
                         className="inline-flex items-center gap-2 px-6 py-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl text-slate-800 dark:text-white font-medium transition-colors"
                     >
-                        <ArrowLeft size={20} /> Back to Dashboard
+                        <ArrowLeft size={20} /> กลับสู่หน้าหลัก
                     </Link>
                 </div>
             </div>
@@ -146,6 +146,9 @@ export default function ExamPage() {
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+                    <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded-xl text-sm text-blue-800 dark:text-blue-300">
+                        <strong>คำชี้แจง:</strong> กรุณาอ่านสถานการณ์ทางด้านซ้าย และพิมพ์คำตอบของท่านทางด้านขวา
+                    </div>
                     <div className="prose dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-loose text-base md:text-lg">
                         {exam.scenario.split('\n').map((paragraph, idx) => (
                             <p key={idx} className="mb-4 whitespace-pre-wrap">{paragraph}</p>
@@ -163,7 +166,7 @@ export default function ExamPage() {
                             <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 rounded-l-2xl" />
                             <div className="flex gap-3 mb-2">
                                 <PenTool className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                                <h3 className="text-sm font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wide">Question</h3>
+                                <h3 className="text-sm font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wide">คำถาม (Question)</h3>
                             </div>
                             <p className="text-slate-900 dark:text-white font-medium text-lg leading-relaxed">
                                 {exam.question}
@@ -173,7 +176,7 @@ export default function ExamPage() {
                         {/* Answer Input */}
                         <div>
                             <label htmlFor="answer" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 ml-1">
-                                Your Answer
+                                พื้นที่ตอบคำถาม (Your Answer)
                             </label>
                             <div className="relative group">
                                 <textarea
@@ -181,10 +184,10 @@ export default function ExamPage() {
                                     value={answer}
                                     onChange={(e) => setAnswer(e.target.value)}
                                     className="w-full min-h-[300px] md:min-h-[400px] p-6 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all resize-none text-slate-800 dark:text-slate-100 leading-relaxed font-normal shadow-sm group-hover:border-slate-300 dark:group-hover:border-slate-600"
-                                    placeholder="Type your explanation here..."
+                                    placeholder="พิมพ์คำตอบของคุณที่นี่..."
                                 />
                                 <div className="absolute bottom-4 right-4 text-xs text-slate-400 font-medium bg-white/80 dark:bg-slate-900/80 px-2 py-1 rounded">
-                                    {answer.length} characters
+                                    {answer.length} ตัวอักษร
                                 </div>
                             </div>
                         </div>
@@ -197,7 +200,7 @@ export default function ExamPage() {
                         href="/student/dashboard"
                         className="hidden md:flex items-center gap-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-medium px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
-                        Cancel
+                        ยกเลิก
                     </Link>
                     <button
                         onClick={handleSubmit}
@@ -207,12 +210,12 @@ export default function ExamPage() {
                         {isSubmitting ? (
                             <>
                                 <Loader2 className="w-5 h-5 animate-spin" />
-                                Submitting...
+                                กำลังส่ง...
                             </>
                         ) : (
                             <>
                                 <Send className="w-5 h-5" />
-                                Submit Answer
+                                ยืนยันการส่งคำตอบ
                             </>
                         )}
                     </button>
