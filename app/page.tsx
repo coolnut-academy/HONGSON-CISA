@@ -49,13 +49,17 @@ export default function Home() {
 
   // Landing Page for non-authenticated users
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900/30">
-      {/* Navigation */}
-      <nav className="fixed w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-slate-800/50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900/30 overflow-x-hidden font-sans">
+
+      {/* Mesh Background */}
+      <div className="fixed inset-0 bg-mesh z-0 pointer-events-none" />
+
+      {/* Navigation - Glassmorphism */}
+      <nav className="fixed w-full z-50 glass border-b border-white/20 dark:border-slate-800/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 relative">
+          <div className="flex justify-between h-20 items-center">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 relative drop-shadow-md">
                 <Image
                   src="/logo_cisa.png"
                   alt="Hongson-CISA Logo"
@@ -63,7 +67,7 @@ export default function Home() {
                   className="object-contain"
                 />
               </div>
-              <span className="font-bold text-xl tracking-tight">Hongson-CISA</span>
+              <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 bg-clip-text text-transparent">Hongson-CISA</span>
             </div>
             <div className="flex items-center gap-4">
               <Link href="/login" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
@@ -71,7 +75,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/login"
-                className="px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition-all shadow-md hover:shadow-lg shadow-blue-500/20"
+                className="btn-liquid px-6 py-2.5 rounded-full text-white text-sm font-semibold tracking-wide"
               >
                 เริ่มต้นใช้งาน
               </Link>
@@ -81,35 +85,34 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 lg:pt-48 lg:pb-32 px-4 overflow-hidden relative">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-blue-500/20 rounded-full blur-[120px] -z-10 opacity-30 dark:opacity-20 pointer-events-none" />
-
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-4 z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-xs font-semibold uppercase tracking-wider mb-8">
-            <span className="relative flex h-2 w-2">
+
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass bg-white/40 dark:bg-slate-900/40 text-blue-600 dark:text-blue-300 text-xs font-bold uppercase tracking-widest mb-8 border border-white/50 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
             </span>
             Next Gen Assessment
           </div>
 
-          <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-8 bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent">
-            ระบบวัดและประเมินผลสมรรถนะผู้เรียน <br className="hidden md:block" /> (Hongson-CISA)
+          <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-8 bg-gradient-to-b from-slate-900 to-slate-600 dark:from-white dark:to-slate-400 bg-clip-text text-transparent animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-100 drop-shadow-sm">
+            ระบบวัดและประเมินผล<br className="hidden md:block" />สมรรถนะผู้เรียน <span className="text-4xl lg:text-5xl block mt-2 font-serif italic text-blue-600/80 dark:text-blue-400/80">(Hongson-CISA)</span>
           </h1>
 
-          <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-200">
             การประเมินสมรรถนะตามแนวทาง PISA เพื่อพัฒนาศักยภาพผู้เรียนสู่ระดับสากล วิเคราะห์ผลแม่นยำด้วย AI
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
             <Link
               href="/login"
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-xl shadow-blue-500/30 flex items-center justify-center gap-2 group"
+              className="btn-liquid w-full sm:w-auto px-8 py-4 rounded-full text-white font-bold text-lg flex items-center justify-center gap-2 group"
             >
               เริ่มทำแบบทดสอบ
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <button className="w-full sm:w-auto px-8 py-4 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            <button className="w-full sm:w-auto px-8 py-4 rounded-full glass bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 font-semibold hover:bg-white/80 dark:hover:bg-slate-800 transition-all shadow-sm hover:shadow-lg">
               ดูตัวอย่างระบบ
             </button>
           </div>
@@ -117,33 +120,35 @@ export default function Home() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
+      <section className="relative py-20 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-shadow duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-6">
-                <Zap className="w-6 h-6" />
+            <div className="glass-card p-8 bg-white/60 dark:bg-slate-900/60">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-6 shadow-inner">
+                <Zap className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold mb-3">ผลตอบรับทันที (Real-time Feedback)</h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                ทราบผลคะแนนและได้รับข้อเสนอแนะในการพัฒนาตนเองทันทีหลังส่งคำตอบ
+              <h3 className="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">ผลตอบรับทันที</h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light">
+                ทราบผลคะแนนและได้รับข้อเสนอแนะ (Feedback) ในการพัฒนาตนเองทันทีหลังส่งคำตอบ
               </p>
             </div>
-            <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-shadow duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-6">
-                <CheckCircle2 className="w-6 h-6" />
+
+            <div className="glass-card p-8 bg-white/60 dark:bg-slate-900/60 transition-delay-100">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-6 shadow-inner">
+                <CheckCircle2 className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold mb-3">มาตรฐาน PISA</h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+              <h3 className="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">มาตรฐาน PISA</h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light">
                 ข้อสอบและเกณฑ์การวัดผลที่สอดคล้องกับมาตรฐาน PISA เพื่อเตรียมความพร้อมสู่การแข่งขันระดับโลก
               </p>
             </div>
-            <div className="p-8 rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:shadow-xl transition-shadow duration-300">
-              <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-6">
-                <Lock className="w-6 h-6" />
+
+            <div className="glass-card p-8 bg-white/60 dark:bg-slate-900/60 transition-delay-200">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-6 shadow-inner">
+                <Lock className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold mb-3">มั่นคงปลอดภัย</h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+              <h3 className="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">มั่นคงปลอดภัย</h3>
+              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light">
                 ระบบจัดการข้อมูลที่ปลอดภัย ออกแบบมาเพื่อรองรับผู้ใช้งานจำนวนมาก
               </p>
             </div>
@@ -151,9 +156,9 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="py-12 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+      <footer className="relative py-12 glass border-t border-white/20 dark:border-slate-800/50 bg-white/40 dark:bg-slate-950/40 z-10">
         <div className="max-w-7xl mx-auto px-4 text-center text-slate-500">
-          <p className="mb-4">© 2026 Hongson-CISA. สงวนลิขสิทธิ์.</p>
+          <p className="mb-4 font-light">© 2026 Hongson-CISA. สงวนลิขสิทธิ์.</p>
           <DeveloperBadge />
         </div>
       </footer>

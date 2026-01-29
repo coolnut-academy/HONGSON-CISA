@@ -24,38 +24,36 @@ export default function LoginPage() {
     // Show a loading spinner while checking auth status
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-slate-950">
+            <div className="flex items-center justify-center min-h-screen bg-mesh">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             </div>
         );
     }
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-slate-900 dark:to-slate-800 p-4 relative overflow-hidden">
-            {/* Background decoration */}
-            <div className="absolute top-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full bg-blue-400/20 blur-3xl pointer-events-none" />
-            <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-indigo-400/20 blur-3xl pointer-events-none" />
+        <div className="flex items-center justify-center min-h-screen bg-mesh p-4 relative overflow-hidden font-sans">
 
             <motion.div
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }} // Spring-like ease
                 className="w-full max-w-md z-10"
             >
-                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/50 dark:border-white/10">
+                <div className="glass-card p-10 bg-white/70 dark:bg-slate-900/70 border border-white/40 dark:border-white/10 shadow-2xl shadow-blue-900/10">
                     <div className="text-center mb-10">
-                        <div className="relative w-24 h-24 mb-6 mx-auto">
+
+                        <div className="relative w-28 h-28 mb-8 mx-auto drop-shadow-xl filter">
                             <Image
                                 src="/logo_cisa.png"
                                 alt="Hongson-CISA Logo"
                                 fill
-                                className="object-contain drop-shadow-lg"
+                                className="object-contain"
                             />
                         </div>
-                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
+                        <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
                             Hongson-CISA
                         </h1>
-                        <p className="text-slate-600 dark:text-slate-400 font-medium">
+                        <p className="text-slate-500 dark:text-slate-400 font-normal text-lg">
                             Competency Assessment Platform
                         </p>
                     </div>
@@ -63,9 +61,9 @@ export default function LoginPage() {
                     <div className="space-y-6">
                         <button
                             onClick={signInWithGoogle}
-                            className="group relative w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-blue-100 dark:hover:border-blue-900 hover:bg-blue-50/50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 font-semibold py-4 px-4 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md active:scale-[0.98]"
+                            className="group relative w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 font-semibold py-4 px-4 rounded-xl transition-all duration-300 shadow-sm hover:shadow-lg hover:-translate-y-0.5"
                         >
-                            <svg className="w-5 h-5 transition-transform group-hover:scale-110 duration-300" viewBox="0 0 24 24">
+                            <svg className="w-6 h-6 transition-transform group-hover:scale-110 duration-300" viewBox="0 0 24 24">
                                 <path
                                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                                     fill="#4285F4"
@@ -83,24 +81,23 @@ export default function LoginPage() {
                                     fill="#EA4335"
                                 />
                             </svg>
-                            <span>Sign in with Google</span>
-                            <div className="absolute inset-0 rounded-xl ring-2 ring-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <span className="text-base">Sign in with Google</span>
                         </button>
 
-                        <div className="flex items-center gap-4">
-                            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
-                            <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Secure Access</span>
-                            <div className="h-px flex-1 bg-slate-200 dark:bg-slate-700" />
+                        <div className="flex items-center gap-4 py-2">
+                            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Secure Access</span>
+                            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 dark:via-slate-700 to-transparent" />
                         </div>
 
-                        <p className="text-xs text-center text-slate-400 dark:text-slate-500 max-w-xs mx-auto leading-relaxed">
-                            By proceeding, you agree to the <a href="#" className="underline hover:text-blue-500">Terms</a> and <a href="#" className="underline hover:text-blue-500">Privacy Policy</a> of coolnut academy.
+                        <p className="text-xs text-center text-slate-400 dark:text-slate-500 max-w-xs mx-auto leading-relaxed font-light">
+                            By proceeding, you agree to the <a href="#" className="underline decoration-slate-300 hover:text-blue-500 hover:decoration-blue-400 transition-colors">Terms</a> and <a href="#" className="underline decoration-slate-300 hover:text-blue-500 hover:decoration-blue-400 transition-colors">Privacy Policy</a> of coolnut academy.
                         </p>
                     </div>
                 </div>
 
                 <div className="text-center mt-8">
-                    <p className="text-xs text-slate-500 font-medium">© 2026 Hongson-CISA. All rights reserved.</p>
+                    <p className="text-xs text-slate-400 font-medium tracking-wide">© 2026 Hongson-CISA. All rights reserved.</p>
                 </div>
             </motion.div>
         </div>
