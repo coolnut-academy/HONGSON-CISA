@@ -121,54 +121,57 @@ export default function Home() {
               เริ่มทำแบบทดสอบ
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <button className="w-full sm:w-auto px-8 py-4 rounded-full glass bg-white/50 dark:bg-slate-900/50 text-slate-700 dark:text-slate-200 font-semibold hover:bg-white/80 dark:hover:bg-slate-800 transition-all shadow-sm hover:shadow-lg">
-              ดูตัวอย่างระบบ
-            </button>
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="relative py-20 z-10">
+      <section className="relative py-8 z-10 ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="glass-card p-8 bg-white/60 dark:bg-slate-900/60">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/20 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-6 shadow-inner">
-                <Zap className="w-7 h-7" />
+          <div className="grid md:grid-cols-3 gap-2">
+            <Link href="https://hongson-cisa.vercel.app/" className="glass-card p-6 bg-white/60 dark:bg-slate-900/60 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all cursor-pointer block">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-inner">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">ผลตอบรับทันที</h3>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">ผลตอบรับทันที</h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light">
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-light">
                 ทราบผลคะแนนและได้รับข้อเสนอแนะ (Feedback) ในการพัฒนาตนเองทันทีหลังส่งคำตอบ
               </p>
-            </div>
+            </Link>
 
-            <div className="glass-card p-8 bg-white/60 dark:bg-slate-900/60 transition-delay-100">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-6 shadow-inner">
-                <CheckCircle2 className="w-7 h-7" />
+            <Link href="https://hongson-cisa.vercel.app/" className="glass-card p-6 bg-white/60 dark:bg-slate-900/60 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all cursor-pointer block transition-delay-100">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">มาตรฐาน PISA</h3>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">มาตรฐาน PISA</h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light">
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-light">
                 ข้อสอบและเกณฑ์การวัดผลที่สอดคล้องกับมาตรฐาน PISA เพื่อเตรียมความพร้อมสู่การแข่งขันระดับโลก
               </p>
-            </div>
+            </Link>
 
-            <div className="glass-card p-8 bg-white/60 dark:bg-slate-900/60 transition-delay-200">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 flex items-center justify-center mb-6 shadow-inner">
-                <Lock className="w-7 h-7" />
+            <Link href="https://hongson-cisa.vercel.app/" className="glass-card p-6 bg-white/60 dark:bg-slate-900/60 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all cursor-pointer block transition-delay-200">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-inner">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">มั่นคงปลอดภัย</h3>
               </div>
-              <h3 className="text-xl font-bold mb-3 text-slate-800 dark:text-slate-100">มั่นคงปลอดภัย</h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed font-light">
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-light">
                 ระบบจัดการข้อมูลที่ปลอดภัย ออกแบบมาเพื่อรองรับผู้ใช้งานจำนวนมาก
               </p>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
 
       <footer className="relative py-12 glass border-t border-white/20 dark:border-slate-800/50 bg-white/40 dark:bg-slate-950/40 z-10">
         <div className="max-w-7xl mx-auto px-4 text-center text-slate-500">
-          <p className="mb-4 font-light">© 2026 Hongson-CISA. สงวนลิขสิทธิ์.</p>
           <DeveloperBadge />
+          <p className="mb-4 font-light">© 2026 Hongson-CISA. สงวนลิขสิทธิ์.</p>
         </div>
       </footer>
     </div>
