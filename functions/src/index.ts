@@ -4,6 +4,10 @@ import * as admin from "firebase-admin";
 import { VertexAI } from "@google-cloud/vertexai";
 import * as nodemailer from "nodemailer";
 
+// Fix for implicit any type error
+// @ts-ignore
+declare module "nodemailer";
+
 admin.initializeApp();
 const db = admin.firestore();
 
