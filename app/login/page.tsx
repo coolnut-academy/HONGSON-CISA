@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginPage() {
     const { user, loading, signInWithGoogle } = useAuth();
@@ -43,8 +44,13 @@ export default function LoginPage() {
             >
                 <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-white/50 dark:border-white/10">
                     <div className="text-center mb-10">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-blue-500/30 mb-6">
-                            <span className="text-white text-2xl font-bold">H</span>
+                        <div className="relative w-24 h-24 mb-6 mx-auto">
+                            <Image
+                                src="/logo_cisa.png"
+                                alt="Hongson-CISA Logo"
+                                fill
+                                className="object-contain drop-shadow-lg"
+                            />
                         </div>
                         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">
                             Hongson-CISA
