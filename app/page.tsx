@@ -51,8 +51,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-100 dark:selection:bg-blue-900/30 overflow-x-hidden font-sans">
 
-      {/* Mesh Background */}
-      <div className="fixed inset-0 bg-mesh z-0 pointer-events-none" />
+      {/* Hero Background Image */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Image
+          src="/cisa_background.png"
+          alt="CISA Background"
+          fill
+          className="object-cover opacity-30 dark:opacity-20"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/80 dark:from-slate-950/70 dark:via-slate-950/50 dark:to-slate-950/90" />
+      </div>
 
       {/* Navigation - Glassmorphism */}
       <nav className="fixed w-full z-50 glass border-b border-white/20 dark:border-slate-800/50">

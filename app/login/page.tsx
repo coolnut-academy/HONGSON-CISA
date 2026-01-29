@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Sparkles, User, GraduationCap, ArrowRight } from "lucide-react";
+import { Loader2, Sparkles, User, GraduationCap, ArrowRight, Home } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
 import GlassInput from "@/components/ui/GlassInput";
 import GlassButton from "@/components/ui/GlassButton";
@@ -66,6 +67,15 @@ export default function LoginPage() {
                 className="w-full max-w-md z-10"
             >
                 <GlassCard padding="xl" hover={false} className="relative overflow-hidden">
+                    {/* Home Button */}
+                    <Link 
+                        href="/"
+                        className="absolute top-4 left-4 p-2.5 rounded-xl glass hover:bg-[var(--glass-bg-solid)] text-[var(--text-secondary)] hover:text-[var(--accent-primary)] transition-all duration-300 hover:scale-110 hover:shadow-lg z-20 group"
+                        title="กลับหน้าหลัก"
+                    >
+                        <Home size={20} className="group-hover:rotate-[-8deg] transition-transform" />
+                    </Link>
+
                     {/* Inner glow */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-gradient-to-b from-white/30 to-transparent rounded-full blur-2xl pointer-events-none" />
 
