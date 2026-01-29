@@ -40,7 +40,9 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
             // The onAuthStateChanged listener will handle the state update
         } catch (error) {
             console.error("Error signing in with Google", error);
-            alert("Error signing in with Google. Please try again.");
+            // Cast error to any to access message property safely in this context
+            const errorMessage = (error as any).message || "Unknown error occurred.";
+            alert(`Error signing in with Google: ${errorMessage}`);
         }
     };
 
