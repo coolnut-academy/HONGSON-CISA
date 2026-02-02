@@ -8,48 +8,54 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Helper function to check user role from users collection
-    function getUserRole() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    // Helper function to get user role - with null safety
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
     
-    // Helper function to check if user is admin or super_admin
+    // Check if user has admin role
     function isAdmin() {
-      return isAuthenticated() && getUserRole() in ['admin', 'super_admin'];
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             getUserData().role in ['admin', 'super_admin'];
     }
     
-    // Helper function to check if user is super_admin
+    // Check if user is super_admin
     function isSuperAdmin() {
-      return isAuthenticated() && getUserRole() == 'super_admin';
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             getUserData().role == 'super_admin';
     }
     
     // Users collection
     match /users/{userId} {
       // Anyone authenticated can read their own document
       allow read: if isAuthenticated() && request.auth.uid == userId;
-      // Admins can read all users
-      allow read: if isAdmin();
-      // Users can update their own document (limited fields)
+      // Admins can read all users (with existence check)
+      allow read: if isAuthenticated() && 
+                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin'];
+      // Users can create their own document (for registration)
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      // Users can update their own document
       allow update: if isAuthenticated() && request.auth.uid == userId;
-      // Only super_admin can create/delete users
-      allow create, delete: if isSuperAdmin();
-      // Admins can update user roles
-      allow update: if isAdmin();
+      // Only super_admin can delete users
+      allow delete: if isSuperAdmin();
     }
     
     // Pre-registered students collection
     match /pre_registered_students/{studentId} {
-      // Admins can read pre-registered students
-      allow read: if isAdmin();
-      // Only super_admin can write to pre-registered students
-      allow write: if isSuperAdmin();
-      // Allow reading for login verification (unauthenticated)
+      // Allow reading for login verification (needed during registration)
       allow get: if true;
+      // Admins can read list
+      allow list: if isAdmin();
+      // Only super_admin can write
+      allow write: if isSuperAdmin();
     }
     
-    // Exams collection
+    // Exams collection - SIMPLIFIED: All authenticated users can read
     match /exams/{examId} {
-      // Anyone authenticated can read active exams
+      // Any authenticated user can read exams (students, admins, etc.)
       allow read: if isAuthenticated();
       // Only admins can create/update/delete exams
       allow write: if isAdmin();
@@ -58,18 +64,26 @@ service cloud.firestore {
     // Submissions collection
     match /submissions/{submissionId} {
       // Users can read their own submissions
-      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && resource.data.studentId == request.auth.uid;
       // Admins can read all submissions
       allow read: if isAdmin();
       // Authenticated users can create submissions
       allow create: if isAuthenticated();
       // Only admins can update submissions (for grading)
       allow update: if isAdmin();
+      // Prevent deletion
+      allow delete: if false;
     }
     
-    // AI Grading results
+    // AI Grading config/results
     match /ai_grading/{gradingId} {
       allow read: if isAdmin();
+      allow write: if isSuperAdmin();
+    }
+    
+    // System settings
+    match /settings/{settingId} {
+      allow read: if isAuthenticated();
       allow write: if isSuperAdmin();
     }
   }

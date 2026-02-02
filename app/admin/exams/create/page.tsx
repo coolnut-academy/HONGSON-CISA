@@ -6,21 +6,26 @@ import { useAuth } from "@/context/AuthContext";
 import { useRoleProtection } from "@/hooks/useRoleProtection";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { Loader2, Save, ArrowLeft, FileText, Cpu, MonitorPlay, ListPlus, Trash2, Lightbulb, Link2, ChevronRight, Sparkles } from "lucide-react";
+import { Loader2, Save, ArrowLeft, FileText, Cpu, MonitorPlay, ListPlus, Trash2, Lightbulb, Link2, ChevronRight, Sparkles, Beaker } from "lucide-react";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassInput, GlassTextarea, GlassSelect } from "@/components/ui/GlassInput";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassBadge } from "@/components/ui/GlassBadge";
 import { ExamItem, MediaType } from "@/types";
-import { 
-    COMPETENCIES_DATA, 
-    getAllCompetencyOptions, 
-    getSubCompetencyOptions, 
-    getCompetencyById, 
+import {
+    COMPETENCIES_DATA,
+    getAllCompetencyOptions,
+    getSubCompetencyOptions,
+    getCompetencyById,
     getSubCompetencyById,
-    type SubCompetency 
+    type SubCompetency
 } from "@/lib/data/competencies";
+import {
+    getAllSampleExamOptions,
+    getSampleExamById,
+    type SampleExamKey
+} from "@/lib/data/sample-exam-c6";
 
 const LEGACY_COMPETENCIES = [
     { value: "1. อธิบายหลักการทางวิทยาศาสตร์", label: "1. อธิบายหลักการทางวิทยาศาสตร์" },
@@ -71,8 +76,8 @@ export default function CreateExamPage() {
                 setFormData(prev => ({ ...prev, competency: user.assignedCompetency! }));
             } else if (user.role === 'super_admin' && !formData.competencyId && COMPETENCIES_DATA.length > 0) {
                 const firstCompetency = COMPETENCIES_DATA[0];
-                setFormData(prev => ({ 
-                    ...prev, 
+                setFormData(prev => ({
+                    ...prev,
                     competencyId: firstCompetency.id,
                     competency: firstCompetency.description
                 }));
@@ -95,11 +100,11 @@ export default function CreateExamPage() {
         const subCompetencyId = e.target.value;
         const competency = getCompetencyById(formData.competencyId);
         const subCompetency = getSubCompetencyById(formData.competencyId, subCompetencyId);
-        
-        const competencyString = subCompetency 
+
+        const competencyString = subCompetency
             ? `${competency?.description} - ${subCompetency.title}`
             : competency?.description || "";
-        
+
         setFormData(prev => ({
             ...prev,
             subCompetencyId,
@@ -130,7 +135,7 @@ export default function CreateExamPage() {
     };
 
     const handleItemChange = (itemId: string, field: keyof ExamItem, value: string | number) => {
-        setItems(prev => prev.map(item => 
+        setItems(prev => prev.map(item =>
             item.id === itemId ? { ...item, [field]: value } : item
         ));
     };
@@ -144,16 +149,43 @@ export default function CreateExamPage() {
         setItems(prev => prev.filter(item => item.id !== itemId));
     };
 
+    // Load sample exam data
+    const loadSampleExam = (sampleId: SampleExamKey) => {
+        const sampleData = getSampleExamById(sampleId);
+        if (!sampleData) return;
+
+        // Update form data
+        setFormData({
+            title: sampleData.title,
+            competency: sampleData.competency,
+            competencyId: sampleData.competencyId,
+            subCompetencyId: sampleData.subCompetencyId,
+            scenario: sampleData.scenario,
+            mediaType: sampleData.mediaType,
+            mediaUrl: sampleData.mediaUrl,
+            isActive: true
+        });
+
+        // Generate new IDs for items and set them
+        const itemsWithIds: ExamItem[] = sampleData.items.map(item => ({
+            ...item,
+            id: generateItemId()
+        }));
+        setItems(itemsWithIds);
+    };
+
+    const sampleExamOptions = useMemo(() => getAllSampleExamOptions(), []);
+
     const researchSuggestion = useMemo(() => {
         if (!selectedSubCompetency) return null;
-        
+
         const iconMap: Record<string, typeof MonitorPlay> = {
             simulation: MonitorPlay,
             text: FileText,
             image: FileText,
             hybrid: MonitorPlay
         };
-        
+
         return {
             type: selectedSubCompetency.recommendedMedia,
             message: selectedSubCompetency.researchTip,
@@ -217,8 +249,8 @@ export default function CreateExamPage() {
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <Link 
-                    href="/admin/dashboard" 
+                <Link
+                    href="/admin/dashboard"
                     className="p-2 rounded-xl hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
                 >
                     <ArrowLeft size={24} />
@@ -228,6 +260,44 @@ export default function CreateExamPage() {
                     <p className="text-[var(--text-secondary)]">ออกแบบชุดสถานการณ์และคำถามย่อยแบบ PISA</p>
                 </div>
             </div>
+
+            {/* Sample Exam Loader */}
+            <GlassCard hover={false}>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/5 text-emerald-500">
+                            <Beaker size={20} />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-semibold text-[var(--text-primary)]">โหลดข้อสอบตัวอย่าง</h2>
+                            <p className="text-sm text-[var(--text-tertiary)]">
+                                เติมข้อสอบตัวอย่างสมรรถนะที่ 6 ตามพิมพ์เขียว Innovation Blueprint V2
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        {sampleExamOptions.map((sample) => (
+                            <button
+                                key={sample.value}
+                                type="button"
+                                onClick={() => loadSampleExam(sample.value as SampleExamKey)}
+                                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-medium text-sm hover:from-emerald-600 hover:to-teal-600 transition-all flex items-center gap-2 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30"
+                            >
+                                <Beaker size={16} />
+                                <span>{sample.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                <div className="mt-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                    <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-start gap-2">
+                        <Sparkles size={14} className="mt-0.5 flex-shrink-0" />
+                        <span>
+                            <strong>Innovation Blueprint V2:</strong> ข้อสอบตัวอย่างนี้ออกแบบตามพิมพ์เขียวนวัตกรรมการวัดผลสมรรถนะ ประกอบด้วย 4 องค์ประกอบ ได้แก่ การเข้าใจปรากฏการณ์, การเชื่อมโยงคณิต/วิทย์, เทคโนโลยี และคุณลักษณะ/จริยธรรม พร้อมเกณฑ์การให้คะแนนระดับ 7-10
+                        </span>
+                    </p>
+                </div>
+            </GlassCard>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Basic Info */}
@@ -257,7 +327,7 @@ export default function CreateExamPage() {
                                     เลือกสมรรถนะแบบลำดับชั้น (CBE Thailand)
                                 </span>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Level 1: Main Competency */}
                                 <div className="space-y-2">
@@ -327,7 +397,7 @@ export default function CreateExamPage() {
                                         </h4>
                                         <GlassBadge variant="warning">AI Suggestion</GlassBadge>
                                     </div>
-                                    
+
                                     <div className="mb-3">
                                         <p className="text-xs text-amber-600/70 dark:text-amber-400/70 mb-1">
                                             สำหรับสมรรถนะย่อย: {researchSuggestion.subCompetencyTitle}
@@ -344,26 +414,26 @@ export default function CreateExamPage() {
                                                 {researchSuggestion.type === 'hybrid' ? 'Hybrid' : researchSuggestion.type === 'simulation' ? 'Simulation' : researchSuggestion.type === 'text' ? 'Text' : 'Image'}
                                             </GlassBadge>
                                         </div>
-                                        
+
                                         {((researchSuggestion.type === 'hybrid' && formData.mediaType !== 'simulation') ||
-                                          (researchSuggestion.type !== 'hybrid' && formData.mediaType !== researchSuggestion.type && 
-                                           (researchSuggestion.type === 'simulation' || researchSuggestion.type === 'text'))) && (
-                                            <button
-                                                type="button"
-                                                onClick={applyRecommendedMedia}
-                                                className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-medium transition-colors flex items-center gap-1.5"
-                                            >
-                                                <Sparkles size={12} />
-                                                {researchSuggestion.type === 'hybrid' ? 'Use Hybrid Format' : 'Apply Recommendation'}
-                                            </button>
-                                        )}
-                                        
+                                            (researchSuggestion.type !== 'hybrid' && formData.mediaType !== researchSuggestion.type &&
+                                                (researchSuggestion.type === 'simulation' || researchSuggestion.type === 'text'))) && (
+                                                <button
+                                                    type="button"
+                                                    onClick={applyRecommendedMedia}
+                                                    className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-medium transition-colors flex items-center gap-1.5"
+                                                >
+                                                    <Sparkles size={12} />
+                                                    {researchSuggestion.type === 'hybrid' ? 'Use Hybrid Format' : 'Apply Recommendation'}
+                                                </button>
+                                            )}
+
                                         {((researchSuggestion.type === 'hybrid' && formData.mediaType === 'simulation') ||
-                                          (researchSuggestion.type !== 'hybrid' && formData.mediaType === researchSuggestion.type)) && (
-                                            <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                                                ✓ ใช้งานอยู่แล้ว
-                                            </span>
-                                        )}
+                                            (researchSuggestion.type !== 'hybrid' && formData.mediaType === researchSuggestion.type)) && (
+                                                <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
+                                                    ✓ ใช้งานอยู่แล้ว
+                                                </span>
+                                            )}
                                     </div>
 
                                     {/* Hybrid Mode Warning */}
@@ -402,11 +472,10 @@ export default function CreateExamPage() {
                             <button
                                 type="button"
                                 onClick={() => handleMediaTypeChange('text')}
-                                className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                                    formData.mediaType === 'text'
-                                        ? 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                        : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:border-[var(--text-tertiary)]'
-                                }`}
+                                className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all ${formData.mediaType === 'text'
+                                    ? 'border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                    : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:border-[var(--text-tertiary)]'
+                                    }`}
                             >
                                 <FileText size={24} />
                                 <div className="text-left">
@@ -417,11 +486,10 @@ export default function CreateExamPage() {
                             <button
                                 type="button"
                                 onClick={() => handleMediaTypeChange('simulation')}
-                                className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                                    formData.mediaType === 'simulation'
-                                        ? 'border-purple-500 bg-purple-500/10 text-purple-600 dark:text-purple-400'
-                                        : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:border-[var(--text-tertiary)]'
-                                }`}
+                                className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-xl border-2 transition-all ${formData.mediaType === 'simulation'
+                                    ? 'border-purple-500 bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                                    : 'border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:border-[var(--text-tertiary)]'
+                                    }`}
                             >
                                 <MonitorPlay size={24} />
                                 <div className="text-left">
@@ -495,8 +563,8 @@ export default function CreateExamPage() {
 
                     <div className="space-y-6">
                         {items.map((item, index) => (
-                            <div 
-                                key={item.id} 
+                            <div
+                                key={item.id}
                                 className="p-5 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] relative group"
                             >
                                 <div className="flex items-center justify-between mb-4">
