@@ -54,58 +54,60 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
         const email = `${studentId}@hongsoncisa.com`;
         const password = `hongsoncisa${studentId}`; // Prefix ensures 6+ char minimum for Firebase
 
+        // First, try to fetch pre-registered data (before auth attempt)
+        let preRegData: any = null;
+        try {
+            console.log(`[Auth] Attempting to fetch pre-registered data for: ${studentId}`);
+            const preRegRef = doc(db, "pre_registered_students", studentId);
+            const preRegSnap = await getDoc(preRegRef);
+
+            if (preRegSnap.exists()) {
+                preRegData = preRegSnap.data();
+                console.log(`[Auth] Found pre-registered data:`, preRegData);
+            } else {
+                console.log(`[Auth] No pre-registered data found for: ${studentId}`);
+            }
+        } catch (preRegError) {
+            console.warn("[Auth] Error fetching pre-reg data (might be rules/permission issue):", preRegError);
+            // Continue anyway - we'll use default data
+        }
+
         try {
             // Try to login
             await signInWithEmailAndPassword(auth, email, password);
+            console.log(`[Auth] Existing user signed in: ${email}`);
         } catch (error: any) {
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                // If login fails (user likely doesn't exist or wrong pass), try to register 
-                // We assume "wrong-password" means "user not found" in this auto-reg flow if we stick to ID=Password.
-                // However, if a user actually exists and the ID=Password is correct, but they changed it... wait, they can't change it here.
-                // BUT, if we want to "Auto Register", we should check if the error is "user-not-found" (or invalid-credential in new firebase SDK).
-                // Let's try to CREATE the user.
+                // User doesn't exist, create new account
+                console.log(`[Auth] Creating new user: ${email}`);
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-                    // Check for pre-registered data
-                    let userData: any = {
+                    // Build user data - prioritize pre-registered data
+                    const userData: any = {
                         uid: userCredential.user.uid,
                         email: email,
                         role: 'student',
                         studentId: studentId,
-                        firstName: "นักเรียน",
-                        lastName: studentId,
+                        firstName: preRegData?.firstName || studentId,
+                        lastName: preRegData?.lastName || '',
+                        classRoom: preRegData?.classRoom || null,
                         createdAt: serverTimestamp(),
                     };
 
-                    try {
-                        const preRegRef = doc(db, "pre_registered_students", studentId);
-                        const preRegSnap = await getDoc(preRegRef);
-
-                        if (preRegSnap.exists()) {
-                            const preData = preRegSnap.data();
-                            userData = {
-                                ...userData,
-                                firstName: preData.firstName || userData.firstName,
-                                lastName: preData.lastName || userData.lastName,
-                                classRoom: preData.classRoom || null,
-                                // Maintain any other pre-set data
-                            };
-                        }
-                    } catch (preRegError) {
-                        console.error("Error fetching pre-reg data", preRegError);
-                        // Continue with default data
-                    }
+                    console.log(`[Auth] Creating user document with data:`, userData);
 
                     // Create Firestore doc
                     const userDocRef = doc(db, "users", userCredential.user.uid);
                     await setDoc(userDocRef, userData);
+
+                    console.log(`[Auth] User document created successfully`);
                 } catch (createError: any) {
-                    console.error("Error creating student user", createError);
-                    throw createError; // Rethrow to handle in UI
+                    console.error("[Auth] Error creating student user:", createError);
+                    throw createError;
                 }
             } else {
-                console.error("Error signing in with Student ID", error);
+                console.error("[Auth] Error signing in with Student ID:", error);
                 throw error;
             }
         }
@@ -147,13 +149,23 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
                         // Note: Student Login flow above handles its own creation, but if somehow we end up here
                         // (e.g. they created via console), we default.
 
+                        // Check if this is a student email (from Student ID login)
+                        const isStudentEmail = firebaseUser.email?.endsWith('@hongsoncisa.com');
+                        const defaultRole = isStudentEmail ? 'student' : 'general_user';
+
+                        // Extract student ID from email if it's a student
+                        const studentId = isStudentEmail
+                            ? firebaseUser.email?.replace('@hongsoncisa.com', '')
+                            : undefined;
+
                         const newUserData: AppUser = {
                             uid: firebaseUser.uid,
                             email: firebaseUser.email,
                             photoURL: firebaseUser.photoURL,
-                            role: 'general_user', // DEFAULT TO GENERAL USER
-                            firstName: firebaseUser.displayName?.split(' ')[0] || "User",
+                            role: defaultRole,
+                            firstName: firebaseUser.displayName?.split(' ')[0] || (isStudentEmail ? studentId : "User") || "User",
                             lastName: firebaseUser.displayName?.split(' ').slice(1).join(' ') || "",
+                            studentId: studentId,
                         };
 
                         await setDoc(userDocRef, {
@@ -163,6 +175,7 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
                             photoURL: newUserData.photoURL,
                             firstName: newUserData.firstName,
                             lastName: newUserData.lastName,
+                            studentId: newUserData.studentId || null,
                             createdAt: serverTimestamp(),
                         });
 
@@ -170,11 +183,13 @@ export const AuthContextProvider = ({ children }: { children: React.ReactNode })
                     }
                 } catch (error) {
                     console.error("Error fetching user data from Firestore:", error);
+                    // Also check for student email in error fallback
+                    const isStudentEmail = firebaseUser.email?.endsWith('@hongsoncisa.com');
                     setUser({
                         uid: firebaseUser.uid,
                         email: firebaseUser.email,
                         photoURL: firebaseUser.photoURL,
-                        role: 'general_user',
+                        role: isStudentEmail ? 'student' : 'general_user',
                     });
                 }
             } else {

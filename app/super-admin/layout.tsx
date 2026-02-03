@@ -8,6 +8,7 @@ import {
     Users,
     Cpu,
     Settings,
+    BookOpen,
 } from "lucide-react";
 
 export default function SuperAdminLayout({
@@ -19,6 +20,7 @@ export default function SuperAdminLayout({
 
     const navItems = [
         { name: "แดชบอร์ด", href: "/super-admin/dashboard", icon: LayoutDashboard },
+        { name: "คลังข้อสอบ", href: "/super-admin/exams", icon: BookOpen },
         { name: "จัดการผู้ใช้งาน", href: "/super-admin/users", icon: Users },
         { name: "ควบคุม AI", href: "/super-admin/ai-control", icon: Cpu },
         { name: "ตั้งค่าระบบ", href: "/super-admin/settings", icon: Settings },

@@ -2,10 +2,10 @@
 
 import { useRoleProtection } from "@/hooks/useRoleProtection";
 import { useAuth } from "@/context/AuthContext";
-import { Users, Search, Loader2, UserCog, Trash2, Eye, Upload, RefreshCw, UserCheck, Clock, UserPlus } from "lucide-react";
+import { Users, Search, Loader2, UserCog, Trash2, Eye, Upload, RefreshCw, UserCheck, Clock, UserPlus, Edit, CheckSquare, Square, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, doc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, deleteDoc, setDoc, writeBatch } from "firebase/firestore";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassBadge } from "@/components/ui/GlassBadge";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -31,13 +31,15 @@ export default function UserManagementPage() {
     const [users, setUsers] = useState<UserData[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'all' | 'registered' | 'pre_registered'>('all');
-    
+
     const isSuperAdmin = currentUser?.role === 'super_admin';
     const isReadOnly = currentUser?.role === 'admin';
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showEditProfileModal, setShowEditProfileModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [newRole, setNewRole] = useState("");
     const [saving, setSaving] = useState(false);
@@ -47,7 +49,18 @@ export default function UserManagementPage() {
         lastName: '',
         classRoom: ''
     });
+    const [editProfile, setEditProfile] = useState({
+        firstName: '',
+        lastName: '',
+        classRoom: '',
+        studentId: ''
+    });
     const [addError, setAddError] = useState("");
+    const [editError, setEditError] = useState("");
+
+    // Multi-select state
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isSelectMode, setIsSelectMode] = useState(false);
 
     useEffect(() => {
         fetchAllUsers();
@@ -58,8 +71,8 @@ export default function UserManagementPage() {
         try {
             // Fetch registered users
             const usersSnapshot = await getDocs(collection(db, "users"));
-            const registeredUsers: UserData[] = usersSnapshot.docs.map(doc => ({ 
-                id: doc.id, 
+            const registeredUsers: UserData[] = usersSnapshot.docs.map(doc => ({
+                id: doc.id,
                 ...doc.data(),
                 source: 'registered' as const
             }));
@@ -109,6 +122,36 @@ export default function UserManagementPage() {
     const registeredCount = users.filter(u => u.source === 'registered').length;
     const preRegCount = users.filter(u => u.source === 'pre_registered').length;
 
+    // Toggle select for a user
+    const toggleSelect = (id: string) => {
+        const newSet = new Set(selectedIds);
+        if (newSet.has(id)) {
+            newSet.delete(id);
+        } else {
+            newSet.add(id);
+        }
+        setSelectedIds(newSet);
+    };
+
+    // Select all visible users
+    const selectAll = () => {
+        const allIds = new Set(filteredUsers.map(u => u.id));
+        setSelectedIds(allIds);
+    };
+
+    // Deselect all
+    const deselectAll = () => {
+        setSelectedIds(new Set());
+    };
+
+    // Toggle select mode
+    const toggleSelectMode = () => {
+        if (isSelectMode) {
+            setSelectedIds(new Set());
+        }
+        setIsSelectMode(!isSelectMode);
+    };
+
     const handleEditRole = async () => {
         if (!selectedUser || !newRole) return;
         setSaving(true);
@@ -119,6 +162,52 @@ export default function UserManagementPage() {
             setSelectedUser(null);
         } catch (e) {
             console.error("Error updating role:", e);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleEditProfile = async () => {
+        if (!selectedUser) return;
+
+        // Validation
+        if (!editProfile.firstName.trim()) {
+            setEditError("กรุณากรอกชื่อ");
+            return;
+        }
+        if (!editProfile.lastName.trim()) {
+            setEditError("กรุณากรอกนามสกุล");
+            return;
+        }
+
+        setSaving(true);
+        setEditError("");
+        try {
+            const collectionName = selectedUser.source === 'registered' ? 'users' : 'pre_registered_students';
+            const updateData: any = {
+                firstName: editProfile.firstName.trim(),
+                lastName: editProfile.lastName.trim(),
+                classRoom: editProfile.classRoom.trim()
+            };
+
+            // Only update studentId for pre-registered users
+            if (selectedUser.source === 'pre_registered' && editProfile.studentId !== selectedUser.studentId) {
+                updateData.studentId = editProfile.studentId.trim();
+            }
+
+            await updateDoc(doc(db, collectionName, selectedUser.id), updateData);
+
+            setUsers(users.map(u => u.id === selectedUser.id ? {
+                ...u,
+                ...updateData,
+                email: selectedUser.source === 'pre_registered' ? `${updateData.studentId || u.studentId}@hongsoncisa.com` : u.email
+            } : u));
+
+            setShowEditProfileModal(false);
+            setSelectedUser(null);
+        } catch (e) {
+            console.error("Error updating profile:", e);
+            setEditError("เกิดข้อผิดพลาดในการบันทึก กรุณาลองใหม่");
         } finally {
             setSaving(false);
         }
@@ -136,6 +225,34 @@ export default function UserManagementPage() {
             setSelectedUser(null);
         } catch (e) {
             console.error("Error deleting user:", e);
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.size === 0) return;
+        setSaving(true);
+        try {
+            const batch = writeBatch(db);
+            const idsToDelete = Array.from(selectedIds);
+
+            idsToDelete.forEach(id => {
+                const user = users.find(u => u.id === id);
+                if (user) {
+                    const collectionName = user.source === 'registered' ? 'users' : 'pre_registered_students';
+                    batch.delete(doc(db, collectionName, id));
+                }
+            });
+
+            await batch.commit();
+
+            setUsers(users.filter(u => !selectedIds.has(u.id)));
+            setSelectedIds(new Set());
+            setShowBulkDeleteModal(false);
+            setIsSelectMode(false);
+        } catch (e) {
+            console.error("Error bulk deleting users:", e);
         } finally {
             setSaving(false);
         }
@@ -199,6 +316,18 @@ export default function UserManagementPage() {
         }
     };
 
+    const openEditProfileModal = (user: UserData) => {
+        setSelectedUser(user);
+        setEditProfile({
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            classRoom: user.classRoom || '',
+            studentId: user.studentId || ''
+        });
+        setEditError("");
+        setShowEditProfileModal(true);
+    };
+
     const getRoleBadge = (role?: string) => {
         switch (role) {
             case 'student':
@@ -244,7 +373,7 @@ export default function UserManagementPage() {
             {/* Header */}
             <GlassCard padding="lg" hover={false} className="relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-br from-purple-500/20 to-pink-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-                
+
                 <div className="relative z-10 space-y-4">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="flex items-center gap-4">
@@ -269,12 +398,31 @@ export default function UserManagementPage() {
                                 </p>
                             </div>
                         </div>
-                        
-                        <div className="flex items-center gap-3">
+
+                        <div className="flex items-center gap-3 flex-wrap">
                             {isSuperAdmin && (
                                 <>
-                                    <GlassButton 
-                                        variant="secondary" 
+                                    {/* Select Mode Toggle */}
+                                    <GlassButton
+                                        variant={isSelectMode ? "primary" : "ghost"}
+                                        icon={isSelectMode ? <CheckSquare size={16} /> : <Square size={16} />}
+                                        onClick={toggleSelectMode}
+                                    >
+                                        {isSelectMode ? "ยกเลิกเลือก" : "เลือกหลายคน"}
+                                    </GlassButton>
+
+                                    {isSelectMode && selectedIds.size > 0 && (
+                                        <GlassButton
+                                            variant="danger"
+                                            icon={<Trash2 size={16} />}
+                                            onClick={() => setShowBulkDeleteModal(true)}
+                                        >
+                                            ลบ ({selectedIds.size})
+                                        </GlassButton>
+                                    )}
+
+                                    <GlassButton
+                                        variant="secondary"
                                         icon={<UserPlus size={16} />}
                                         onClick={() => { setShowAddModal(true); setAddError(""); }}
                                     >
@@ -287,8 +435,8 @@ export default function UserManagementPage() {
                                     </Link>
                                 </>
                             )}
-                            <GlassButton 
-                                variant="ghost" 
+                            <GlassButton
+                                variant="ghost"
                                 icon={<RefreshCw size={16} className={loading ? 'animate-spin' : ''} />}
                                 onClick={fetchAllUsers}
                                 disabled={loading}
@@ -300,35 +448,49 @@ export default function UserManagementPage() {
 
                     {/* Tabs and Search */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pt-2">
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
+                            {isSelectMode && (
+                                <>
+                                    <button
+                                        onClick={selectAll}
+                                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/20 transition-colors"
+                                    >
+                                        เลือกทั้งหมด
+                                    </button>
+                                    <button
+                                        onClick={deselectAll}
+                                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-solid)] transition-colors"
+                                    >
+                                        ยกเลิกทั้งหมด
+                                    </button>
+                                    <div className="w-px h-6 bg-[var(--glass-border-subtle)] mx-2" />
+                                </>
+                            )}
                             <button
                                 onClick={() => setActiveTab('all')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                    activeTab === 'all' 
-                                        ? 'bg-[var(--accent-primary)] text-white' 
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'all'
+                                        ? 'bg-[var(--accent-primary)] text-white'
                                         : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-solid)]'
-                                }`}
+                                    }`}
                             >
                                 ทั้งหมด ({users.length})
                             </button>
                             <button
                                 onClick={() => setActiveTab('registered')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                                    activeTab === 'registered' 
-                                        ? 'bg-[var(--accent-success)] text-white' 
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'registered'
+                                        ? 'bg-[var(--accent-success)] text-white'
                                         : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-solid)]'
-                                }`}
+                                    }`}
                             >
                                 <UserCheck size={14} />
                                 เข้าใช้แล้ว ({registeredCount})
                             </button>
                             <button
                                 onClick={() => setActiveTab('pre_registered')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-                                    activeTab === 'pre_registered' 
-                                        ? 'bg-[var(--accent-warning)] text-white' 
+                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'pre_registered'
+                                        ? 'bg-[var(--accent-warning)] text-white'
                                         : 'bg-[var(--glass-bg)] text-[var(--text-secondary)] hover:bg-[var(--glass-bg-solid)]'
-                                }`}
+                                    }`}
                             >
                                 <Clock size={14} />
                                 รอเข้าใช้ ({preRegCount})
@@ -362,6 +524,7 @@ export default function UserManagementPage() {
                         <table className="table-glass">
                             <thead>
                                 <tr>
+                                    {isSelectMode && <th className="w-12"></th>}
                                     <th>รหัส</th>
                                     <th>ชื่อ-นามสกุล</th>
                                     <th>อีเมล</th>
@@ -374,13 +537,27 @@ export default function UserManagementPage() {
                             <tbody>
                                 {filteredUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan={isSuperAdmin ? 7 : 6} className="text-center py-8 text-[var(--text-tertiary)]">
+                                        <td colSpan={isSuperAdmin ? (isSelectMode ? 9 : 8) : (isSelectMode ? 8 : 7)} className="text-center py-8 text-[var(--text-tertiary)]">
                                             {searchQuery ? "ไม่พบผู้ใช้งานที่ค้นหา" : "ไม่พบข้อมูลผู้ใช้งาน"}
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredUsers.map((u) => (
-                                        <tr key={u.id}>
+                                        <tr key={u.id} className={selectedIds.has(u.id) ? 'bg-[var(--accent-primary)]/10' : ''}>
+                                            {isSelectMode && (
+                                                <td className="text-center">
+                                                    <button
+                                                        onClick={() => toggleSelect(u.id)}
+                                                        className="p-1.5 rounded-lg hover:bg-[var(--glass-bg)] transition-colors"
+                                                    >
+                                                        {selectedIds.has(u.id) ? (
+                                                            <CheckSquare size={18} className="text-[var(--accent-primary)]" />
+                                                        ) : (
+                                                            <Square size={18} className="text-[var(--text-tertiary)]" />
+                                                        )}
+                                                    </button>
+                                                </td>
+                                            )}
                                             <td className="font-medium">{u.studentId || '-'}</td>
                                             <td className="font-medium">{u.firstName || '-'} {u.lastName || ''}</td>
                                             <td className="text-[var(--text-secondary)] text-xs">{u.email || '-'}</td>
@@ -389,8 +566,17 @@ export default function UserManagementPage() {
                                             <td>{getStatusBadge(u.source)}</td>
                                             {isSuperAdmin && (
                                                 <td>
-                                                    {u.source === 'registered' ? (
-                                                        <div className="flex items-center justify-center gap-2">
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        {/* Edit Profile Button */}
+                                                        <button
+                                                            onClick={() => openEditProfileModal(u)}
+                                                            className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-secondary)] transition-colors"
+                                                            title="แก้ไขข้อมูล"
+                                                        >
+                                                            <Edit size={18} />
+                                                        </button>
+                                                        {/* Edit Role Button (only for registered users) */}
+                                                        {u.source === 'registered' && (
                                                             <button
                                                                 onClick={() => { setSelectedUser(u); setNewRole(u.role || 'student'); setShowEditModal(true); }}
                                                                 className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-primary)] transition-colors"
@@ -398,25 +584,16 @@ export default function UserManagementPage() {
                                                             >
                                                                 <UserCog size={18} />
                                                             </button>
-                                                            <button
-                                                                onClick={() => { setSelectedUser(u); setShowDeleteModal(true); }}
-                                                                className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
-                                                                title="ลบผู้ใช้"
-                                                            >
-                                                                <Trash2 size={18} />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="flex items-center justify-center">
-                                                            <button
-                                                                onClick={() => { setSelectedUser(u); setShowDeleteModal(true); }}
-                                                                className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
-                                                                title="ลบข้อมูลล่วงหน้า"
-                                                            >
-                                                                <Trash2 size={18} />
-                                                            </button>
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                        {/* Delete Button */}
+                                                        <button
+                                                            onClick={() => { setSelectedUser(u); setShowDeleteModal(true); }}
+                                                            className="p-2 rounded-lg hover:bg-[var(--glass-bg)] text-[var(--text-tertiary)] hover:text-[var(--accent-danger)] transition-colors"
+                                                            title="ลบผู้ใช้"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             )}
                                         </tr>
@@ -467,6 +644,72 @@ export default function UserManagementPage() {
                 )}
             </GlassModal>
 
+            {/* Edit Profile Modal */}
+            <GlassModal
+                isOpen={showEditProfileModal}
+                onClose={() => { setShowEditProfileModal(false); setSelectedUser(null); setEditError(""); }}
+                title="แก้ไขข้อมูลผู้ใช้"
+                footer={
+                    <>
+                        <GlassButton variant="ghost" onClick={() => setShowEditProfileModal(false)}>
+                            ยกเลิก
+                        </GlassButton>
+                        <GlassButton variant="primary" onClick={handleEditProfile} loading={saving}>
+                            บันทึก
+                        </GlassButton>
+                    </>
+                }
+            >
+                {selectedUser && (
+                    <div className="space-y-4">
+                        <div className="p-3 rounded-xl bg-[var(--glass-bg)] text-sm">
+                            <p className="text-[var(--text-secondary)]">
+                                📧 อีเมล: <span className="text-[var(--text-primary)]">{selectedUser.email}</span>
+                            </p>
+                            <p className="text-[var(--text-secondary)]">
+                                📋 สถานะ: {selectedUser.source === 'registered' ? 'เข้าใช้แล้ว' : 'รอเข้าใช้'}
+                            </p>
+                        </div>
+
+                        {selectedUser.source === 'pre_registered' && (
+                            <GlassInput
+                                label="รหัสนักเรียน"
+                                value={editProfile.studentId}
+                                onChange={(e) => setEditProfile({ ...editProfile, studentId: e.target.value })}
+                                maxLength={10}
+                            />
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <GlassInput
+                                label="ชื่อ *"
+                                placeholder="ชื่อจริง"
+                                value={editProfile.firstName}
+                                onChange={(e) => setEditProfile({ ...editProfile, firstName: e.target.value })}
+                            />
+                            <GlassInput
+                                label="นามสกุล *"
+                                placeholder="นามสกุล"
+                                value={editProfile.lastName}
+                                onChange={(e) => setEditProfile({ ...editProfile, lastName: e.target.value })}
+                            />
+                        </div>
+                        <GlassInput
+                            label="ห้องเรียน"
+                            placeholder="เช่น ม.1/1"
+                            value={editProfile.classRoom}
+                            onChange={(e) => setEditProfile({ ...editProfile, classRoom: e.target.value })}
+                        />
+
+                        {editError && (
+                            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[var(--accent-danger)] text-sm">
+                                {editError}
+                            </div>
+                        )}
+                    </div>
+                )}
+            </GlassModal>
+
             {/* Delete Confirmation Modal */}
             <GlassModal
                 isOpen={showDeleteModal}
@@ -501,11 +744,49 @@ export default function UserManagementPage() {
                 )}
             </GlassModal>
 
+            {/* Bulk Delete Modal */}
+            <GlassModal
+                isOpen={showBulkDeleteModal}
+                onClose={() => setShowBulkDeleteModal(false)}
+                title="ยืนยันการลบหลายคน"
+                footer={
+                    <>
+                        <GlassButton variant="ghost" onClick={() => setShowBulkDeleteModal(false)}>
+                            ยกเลิก
+                        </GlassButton>
+                        <GlassButton variant="danger" onClick={handleBulkDelete} loading={saving}>
+                            ลบทั้งหมด ({selectedIds.size} คน)
+                        </GlassButton>
+                    </>
+                }
+            >
+                <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <p className="text-[var(--accent-danger)] font-medium mb-2">
+                            คุณกำลังจะลบผู้ใช้ทั้งหมด {selectedIds.size} คน:
+                        </p>
+                        <div className="max-h-40 overflow-y-auto space-y-1">
+                            {Array.from(selectedIds).map(id => {
+                                const user = users.find(u => u.id === id);
+                                return user ? (
+                                    <p key={id} className="text-sm text-[var(--text-primary)]">
+                                        • {user.firstName} {user.lastName} ({user.studentId || user.email})
+                                    </p>
+                                ) : null;
+                            })}
+                        </div>
+                    </div>
+                    <p className="text-sm text-[var(--text-tertiary)]">
+                        ⚠️ การลบผู้ใช้จะไม่สามารถกู้คืนได้ กรุณายืนยันการดำเนินการ
+                    </p>
+                </div>
+            </GlassModal>
+
             {/* Add User Modal */}
             <GlassModal
                 isOpen={showAddModal}
-                onClose={() => { 
-                    setShowAddModal(false); 
+                onClose={() => {
+                    setShowAddModal(false);
                     setNewUser({ studentId: '', firstName: '', lastName: '', classRoom: '' });
                     setAddError("");
                 }}
@@ -549,13 +830,13 @@ export default function UserManagementPage() {
                         value={newUser.classRoom}
                         onChange={(e) => setNewUser({ ...newUser, classRoom: e.target.value })}
                     />
-                    
+
                     {addError && (
                         <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-[var(--accent-danger)] text-sm">
                             {addError}
                         </div>
                     )}
-                    
+
                     <div className="p-3 rounded-xl bg-[var(--glass-bg)] text-sm text-[var(--text-tertiary)]">
                         <p>📧 อีเมล: <span className="text-[var(--text-secondary)]">{newUser.studentId || 'xxxxx'}@hongsoncisa.com</span></p>
                         <p>🔑 รหัสผ่าน: <span className="text-[var(--text-secondary)]">hongsoncisa{newUser.studentId || 'xxxxx'}</span></p>

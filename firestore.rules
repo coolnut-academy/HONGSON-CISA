@@ -39,6 +39,8 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.auth.uid == userId;
       // Users can update their own document
       allow update: if isAuthenticated() && request.auth.uid == userId;
+      // Super admin can update ANY user document (for role management)
+      allow update: if isSuperAdmin();
       // Only super_admin can delete users
       allow delete: if isSuperAdmin();
     }
