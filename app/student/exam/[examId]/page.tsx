@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useRoleProtection } from "@/hooks/useRoleProtection";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { Exam, Submission } from "@/types";
+import { Exam, Submission, QuestionAnswer, ExamItem } from "@/types";
 import {
     Loader2,
     Send,
@@ -15,19 +15,29 @@ import {
     BookOpen,
     PenTool,
     MonitorPlay,
-    ChevronDown,
-    ChevronUp,
     Maximize2,
     Minimize2,
     CheckCircle,
-    Circle,
     Clock,
     Info,
     ChevronLeft,
     ChevronRight,
-    Flag
+    Save
 } from "lucide-react";
 import Link from "next/link";
+
+// Import exam components
+import {
+    MultipleChoice,
+    MultipleSelect,
+    DragDrop,
+    Matching,
+    Checklist,
+    ShortResponse,
+    ExtendedResponse,
+    ExamTimer,
+    StimulusRenderer
+} from "@/components/exam";
 
 export default function ExamPage() {
     const params = useParams();
@@ -39,11 +49,16 @@ export default function ExamPage() {
     const [exam, setExam] = useState<Exam | null>(null);
     const [loadingExam, setLoadingExam] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [answers, setAnswers] = useState<Record<string, string>>({});
+    const [answers, setAnswers] = useState<Record<string, QuestionAnswer>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentItemIndex, setCurrentItemIndex] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [showInstructions, setShowInstructions] = useState(true);
+    const [examStartTime, setExamStartTime] = useState<Date | null>(null);
+    const [generatedValues, setGeneratedValues] = useState<Record<string, number>>({});
+    const [randomSeed] = useState(() => Math.floor(Math.random() * 1000000));
+    const [isSaving, setIsSaving] = useState(false);
+    const lastSaveRef = useRef<Date | null>(null);
 
     useEffect(() => {
         async function fetchExam() {
@@ -58,10 +73,12 @@ export default function ExamPage() {
                     if (data.isActive) {
                         const examData = { id: docSnap.id, ...data };
                         setExam(examData);
+
+                        // Initialize answers structure based on question types
                         if (data.items && data.items.length > 0) {
-                            const initialAnswers: Record<string, string> = {};
+                            const initialAnswers: Record<string, QuestionAnswer> = {};
                             data.items.forEach(item => {
-                                initialAnswers[item.id] = "";
+                                initialAnswers[item.id] = createEmptyAnswer(item.questionType || 'extended_response');
                             });
                             setAnswers(initialAnswers);
                         }
@@ -81,6 +98,38 @@ export default function ExamPage() {
 
         fetchExam();
     }, [examId]);
+
+    // Create empty answer based on question type
+    const createEmptyAnswer = (questionType: string): QuestionAnswer => {
+        const baseAnswer: QuestionAnswer = { type: questionType as any };
+
+        switch (questionType) {
+            case 'multiple_choice':
+                return { ...baseAnswer, selectedOptionId: undefined };
+            case 'multiple_select':
+            case 'checklist':
+                return { ...baseAnswer, selectedOptionIds: [] };
+            case 'drag_drop':
+                return { ...baseAnswer, dragDropPlacements: {} };
+            case 'matching':
+                return { ...baseAnswer, matchingPairs: {} };
+            case 'short_response':
+            case 'extended_response':
+            default:
+                return { ...baseAnswer, textAnswer: '' };
+        }
+    };
+
+    // Start exam timer when instructions are dismissed
+    const handleStartExam = useCallback(() => {
+        setShowInstructions(false);
+        setExamStartTime(new Date());
+
+        // Request notification permission for timer warnings
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }, []);
 
     // Fullscreen handler
     const toggleFullscreen = useCallback(() => {
@@ -105,9 +154,54 @@ export default function ExamPage() {
         return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
     }, []);
 
-    const handleAnswerChange = (itemId: string, value: string) => {
-        setAnswers(prev => ({ ...prev, [itemId]: value }));
-    };
+    // Handle answer changes for different question types
+    const handleAnswerChange = useCallback((itemId: string, answer: Partial<QuestionAnswer>) => {
+        setAnswers(prev => ({
+            ...prev,
+            [itemId]: {
+                ...prev[itemId],
+                ...answer
+            }
+        }));
+    }, []);
+
+    // Auto-save function
+    const handleAutoSave = useCallback(async () => {
+        if (!user || !exam || isSaving) return;
+
+        // Don't save too frequently
+        if (lastSaveRef.current) {
+            const timeSinceLastSave = Date.now() - lastSaveRef.current.getTime();
+            if (timeSinceLastSave < 30000) return; // At least 30 seconds between saves
+        }
+
+        setIsSaving(true);
+        try {
+            // Save to localStorage as backup
+            const saveData = {
+                examId: exam.id,
+                answers,
+                savedAt: new Date().toISOString(),
+                randomSeed,
+                generatedValues
+            };
+            localStorage.setItem(`exam_autosave_${exam.id}_${user.uid}`, JSON.stringify(saveData));
+            lastSaveRef.current = new Date();
+            console.log('Auto-saved at', new Date().toLocaleTimeString());
+        } catch (err) {
+            console.error('Auto-save failed:', err);
+        } finally {
+            setIsSaving(false);
+        }
+    }, [user, exam, answers, isSaving, randomSeed, generatedValues]);
+
+    // Auto-save every 2 minutes
+    useEffect(() => {
+        if (!examStartTime || !exam) return;
+
+        const interval = setInterval(handleAutoSave, 120000); // 2 minutes
+        return () => clearInterval(interval);
+    }, [examStartTime, exam, handleAutoSave]);
 
     const totalMaxScore = useMemo(() => {
         if (!exam?.items) return 0;
@@ -115,12 +209,41 @@ export default function ExamPage() {
     }, [exam]);
 
     const answeredCount = useMemo(() => {
-        return Object.values(answers).filter(a => a.trim().length > 0).length;
-    }, [answers]);
+        if (!exam?.items) return 0;
+
+        return exam.items.filter(item => {
+            const answer = answers[item.id];
+            if (!answer) return false;
+
+            switch (item.questionType || 'extended_response') {
+                case 'multiple_choice':
+                    return !!answer.selectedOptionId;
+                case 'multiple_select':
+                case 'checklist':
+                    return (answer.selectedOptionIds?.length || 0) > 0;
+                case 'drag_drop':
+                    return Object.keys(answer.dragDropPlacements || {}).length > 0;
+                case 'matching':
+                    return Object.keys(answer.matchingPairs || {}).length > 0;
+                case 'short_response':
+                case 'extended_response':
+                default:
+                    return (answer.textAnswer?.trim().length || 0) > 0;
+            }
+        }).length;
+    }, [answers, exam]);
 
     const currentItem = exam?.items?.[currentItemIndex];
     const isFirstItem = currentItemIndex === 0;
     const isLastItem = exam?.items ? currentItemIndex === exam.items.length - 1 : true;
+
+    // Get current category
+    const currentCategory = currentItem?.category;
+    const showCategoryHeader = useMemo(() => {
+        if (!currentCategory || currentItemIndex === 0) return false;
+        const prevItem = exam?.items?.[currentItemIndex - 1];
+        return prevItem?.category !== currentCategory;
+    }, [currentCategory, currentItemIndex, exam?.items]);
 
     const goToNextItem = () => {
         if (exam?.items && currentItemIndex < exam.items.length - 1) {
@@ -134,18 +257,39 @@ export default function ExamPage() {
         }
     };
 
-    const handleSubmit = async () => {
+    // Submit handler (also used for auto-submit)
+    const handleSubmit = useCallback(async (isAutoSubmit: boolean = false) => {
         if (!user || !exam) return;
 
-        const unansweredItems = exam.items.filter(item => !answers[item.id]?.trim());
-        if (unansweredItems.length > 0) {
-            const confirmSubmit = confirm(
-                `คุณยังไม่ได้ตอบคำถาม ${unansweredItems.length} ข้อ คุณแน่ใจหรือไม่ที่จะส่ง?`
-            );
-            if (!confirmSubmit) return;
-        } else {
-            if (!confirm("คุณแน่ใจหรือไม่ที่จะส่งคำตอบ? เมื่อส่งแล้วจะไม่สามารถแก้ไขได้")) {
-                return;
+        if (!isAutoSubmit) {
+            const unansweredItems = exam.items.filter(item => {
+                const answer = answers[item.id];
+                if (!answer) return true;
+
+                switch (item.questionType || 'extended_response') {
+                    case 'multiple_choice':
+                        return !answer.selectedOptionId;
+                    case 'multiple_select':
+                    case 'checklist':
+                        return (answer.selectedOptionIds?.length || 0) === 0;
+                    case 'drag_drop':
+                        return Object.keys(answer.dragDropPlacements || {}).length === 0;
+                    case 'matching':
+                        return Object.keys(answer.matchingPairs || {}).length === 0;
+                    default:
+                        return (answer.textAnswer?.trim().length || 0) === 0;
+                }
+            });
+
+            if (unansweredItems.length > 0) {
+                const confirmSubmit = confirm(
+                    `คุณยังไม่ได้ตอบคำถาม ${unansweredItems.length} ข้อ คุณแน่ใจหรือไม่ที่จะส่ง?`
+                );
+                if (!confirmSubmit) return;
+            } else {
+                if (!confirm("คุณแน่ใจหรือไม่ที่จะส่งคำตอบ? เมื่อส่งแล้วจะไม่สามารถแก้ไขได้")) {
+                    return;
+                }
             }
         }
 
@@ -161,6 +305,11 @@ export default function ExamPage() {
                 initialItemScores[item.id] = 0;
             });
 
+            // Calculate time spent
+            const timeSpentSeconds = examStartTime
+                ? Math.floor((Date.now() - examStartTime.getTime()) / 1000)
+                : 0;
+
             const submissionData: Submission = {
                 examId: exam.id!,
                 studentId: user.uid,
@@ -173,16 +322,28 @@ export default function ExamPage() {
                 score: null,
                 feedback: null,
                 submittedAt: serverTimestamp(),
+                startedAt: examStartTime,
+                timeSpentSeconds,
+                autoSubmitted: isAutoSubmit,
+                randomSeed,
+                generatedValues
             };
 
             await addDoc(collection(db, "submissions"), submissionData);
+
+            // Clear auto-save
+            localStorage.removeItem(`exam_autosave_${exam.id}_${user.uid}`);
 
             // Exit fullscreen before redirect
             if (document.fullscreenElement) {
                 await document.exitFullscreen();
             }
 
-            alert("ส่งคำตอบสำเร็จ! ระบบกำลังรอการประเมินจาก AI...");
+            if (isAutoSubmit) {
+                alert("⏰ หมดเวลา! ระบบได้ส่งคำตอบของคุณโดยอัตโนมัติแล้ว กำลังรอการประเมินจาก AI...");
+            } else {
+                alert("ส่งคำตอบสำเร็จ! ระบบกำลังรอการประเมินจาก AI...");
+            }
             router.push("/student/dashboard");
         } catch (err) {
             console.error("Error submitting answer:", err);
@@ -190,7 +351,107 @@ export default function ExamPage() {
         } finally {
             setIsSubmitting(false);
         }
+    }, [user, exam, answers, examStartTime, randomSeed, generatedValues, router]);
+
+    // Time up handler
+    const handleTimeUp = useCallback(() => {
+        handleAutoSave();
+        handleSubmit(true);
+    }, [handleAutoSave, handleSubmit]);
+
+    // Render question based on type
+    const renderQuestionInput = (item: ExamItem) => {
+        const answer = answers[item.id] || createEmptyAnswer(item.questionType || 'extended_response');
+        const questionType = item.questionType || 'extended_response';
+
+        switch (questionType) {
+            case 'multiple_choice':
+                return (
+                    <MultipleChoice
+                        options={item.options || []}
+                        selectedOptionId={answer.selectedOptionId}
+                        onChange={(optionId) => handleAnswerChange(item.id, { selectedOptionId: optionId })}
+                    />
+                );
+
+            case 'multiple_select':
+                return (
+                    <MultipleSelect
+                        options={item.options || []}
+                        selectedOptionIds={answer.selectedOptionIds || []}
+                        onChange={(optionIds) => handleAnswerChange(item.id, { selectedOptionIds: optionIds })}
+                    />
+                );
+
+            case 'drag_drop':
+                return (
+                    <DragDrop
+                        dragItems={item.dragItems || []}
+                        dropZones={item.dropZones || []}
+                        placements={answer.dragDropPlacements || {}}
+                        onChange={(placements) => handleAnswerChange(item.id, { dragDropPlacements: placements })}
+                    />
+                );
+
+            case 'matching':
+                return (
+                    <Matching
+                        leftColumn={item.leftColumn || []}
+                        rightColumn={item.rightColumn || []}
+                        matchingPairs={answer.matchingPairs || {}}
+                        onChange={(pairs) => handleAnswerChange(item.id, { matchingPairs: pairs })}
+                    />
+                );
+
+            case 'checklist':
+                return (
+                    <Checklist
+                        options={item.options || []}
+                        selectedOptionIds={answer.selectedOptionIds || []}
+                        onChange={(optionIds) => handleAnswerChange(item.id, { selectedOptionIds: optionIds })}
+                    />
+                );
+
+            case 'short_response':
+                return (
+                    <ShortResponse
+                        value={answer.textAnswer || ''}
+                        onChange={(value) => handleAnswerChange(item.id, { textAnswer: value })}
+                        maxCharacters={item.maxCharacters || 500}
+                    />
+                );
+
+            case 'extended_response':
+            default:
+                return (
+                    <ExtendedResponse
+                        value={answer.textAnswer || ''}
+                        onChange={(value) => handleAnswerChange(item.id, { textAnswer: value })}
+                    />
+                );
+        }
     };
+
+    // Check if current question is answered
+    const isCurrentQuestionAnswered = useMemo(() => {
+        if (!currentItem) return false;
+        const answer = answers[currentItem.id];
+        if (!answer) return false;
+
+        switch (currentItem.questionType || 'extended_response') {
+            case 'multiple_choice':
+                return !!answer.selectedOptionId;
+            case 'multiple_select':
+            case 'checklist':
+                return (answer.selectedOptionIds?.length || 0) > 0;
+            case 'drag_drop':
+                return Object.keys(answer.dragDropPlacements || {}).length > 0;
+            case 'matching':
+                return Object.keys(answer.matchingPairs || {}).length > 0;
+            default:
+                return (answer.textAnswer?.trim().length || 0) > 0;
+        }
+    }, [currentItem, answers]);
 
     if (isAuthLoading || loadingExam) {
         return (
@@ -255,18 +516,38 @@ export default function ExamPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    {/* Progress Indicator */}
-                    <div className="hidden md:flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700/50">
-                        <div className="text-center">
-                            <p className="text-xl font-bold text-blue-400">{answeredCount}</p>
-                            <p className="text-[10px] text-slate-500 uppercase tracking-wider">ตอบแล้ว</p>
+                    {/* Timer */}
+                    {examStartTime && exam.timeLimit && (
+                        <ExamTimer
+                            timeLimitMinutes={exam.timeLimit}
+                            startTime={examStartTime}
+                            onTimeUp={handleTimeUp}
+                            onAutoSave={handleAutoSave}
+                        />
+                    )}
+
+                    {/* Progress Indicator (when no timer) */}
+                    {!exam.timeLimit && (
+                        <div className="hidden md:flex items-center gap-3 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-700/50">
+                            <div className="text-center">
+                                <p className="text-xl font-bold text-blue-400">{answeredCount}</p>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-wider">ตอบแล้ว</p>
+                            </div>
+                            <div className="w-px h-8 bg-slate-700" />
+                            <div className="text-center">
+                                <p className="text-xl font-bold text-slate-400">{exam.items?.length || 0}</p>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-wider">ทั้งหมด</p>
+                            </div>
                         </div>
-                        <div className="w-px h-8 bg-slate-700" />
-                        <div className="text-center">
-                            <p className="text-xl font-bold text-slate-400">{exam.items?.length || 0}</p>
-                            <p className="text-[10px] text-slate-500 uppercase tracking-wider">ทั้งหมด</p>
+                    )}
+
+                    {/* Auto-save indicator */}
+                    {isSaving && (
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                            <Save className="w-3 h-3 animate-pulse" />
+                            <span>กำลังบันทึก...</span>
                         </div>
-                    </div>
+                    )}
 
                     {/* Fullscreen Toggle */}
                     <button
@@ -295,6 +576,15 @@ export default function ExamPage() {
                             </div>
                         </div>
                         <div className="p-6 space-y-4">
+                            {exam.timeLimit && (
+                                <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                                    <Clock className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="text-white font-medium">เวลาจำกัด {exam.timeLimit} นาที</p>
+                                        <p className="text-sm text-slate-400">ระบบจะส่งคำตอบอัตโนมัติเมื่อหมดเวลา</p>
+                                    </div>
+                                </div>
+                            )}
                             <div className="flex items-start gap-3">
                                 <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-blue-400 font-bold text-sm">1</div>
                                 <div>
@@ -306,7 +596,7 @@ export default function ExamPage() {
                                 <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-blue-400 font-bold text-sm">2</div>
                                 <div>
                                     <p className="text-white font-medium">ตอบคำถามทีละข้อทางขวา</p>
-                                    <p className="text-sm text-slate-400">ใช้ปุ่ม ก่อนหน้า/ถัดไป เพื่อเลื่อนข้อ</p>
+                                    <p className="text-sm text-slate-400">รูปแบบคำถามหลากหลาย: เลือกตอบ, ลาก-วาง, จับคู่, เขียนอธิบาย</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-3">
@@ -326,7 +616,7 @@ export default function ExamPage() {
                         </div>
                         <div className="p-6 bg-slate-900/50 flex justify-end">
                             <button
-                                onClick={() => setShowInstructions(false)}
+                                onClick={handleStartExam}
                                 className="px-8 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
                             >
                                 เริ่มทำแบบทดสอบ
@@ -381,6 +671,18 @@ export default function ExamPage() {
                                         </p>
                                     ))}
                                 </div>
+
+                                {/* Question-specific stimulus */}
+                                {currentItem?.stimulusContent && (
+                                    <div className="mt-6">
+                                        <StimulusRenderer
+                                            stimuli={currentItem.stimulusContent}
+                                            randomSeed={randomSeed}
+                                            generatedValues={generatedValues}
+                                            onValuesGenerated={setGeneratedValues}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
@@ -400,7 +702,13 @@ export default function ExamPage() {
                                         คำถามข้อที่ {currentItemIndex + 1}
                                     </h2>
                                     <p className="text-xs text-slate-500">
-                                        {currentItem?.score} คะแนน • ทั้งหมด {exam.items?.length} ข้อ
+                                        {currentItem?.score} คะแนน • {currentItem?.questionType === 'multiple_choice' ? 'เลือกตอบ' :
+                                            currentItem?.questionType === 'multiple_select' ? 'เลือกได้หลายข้อ' :
+                                                currentItem?.questionType === 'drag_drop' ? 'ลาก-วาง' :
+                                                    currentItem?.questionType === 'matching' ? 'จับคู่' :
+                                                        currentItem?.questionType === 'checklist' ? 'เลือกรายการ' :
+                                                            currentItem?.questionType === 'short_response' ? 'ตอบสั้น' :
+                                                                'เขียนอธิบาย'}
                                     </p>
                                 </div>
                             </div>
@@ -408,17 +716,39 @@ export default function ExamPage() {
                             {/* Question Navigation Pills */}
                             <div className="hidden md:flex items-center gap-1">
                                 {exam.items?.map((item, idx) => {
-                                    const hasAnswer = answers[item.id]?.trim().length > 0;
+                                    const answer = answers[item.id];
+                                    let hasAnswer = false;
+
+                                    if (answer) {
+                                        switch (item.questionType || 'extended_response') {
+                                            case 'multiple_choice':
+                                                hasAnswer = !!answer.selectedOptionId;
+                                                break;
+                                            case 'multiple_select':
+                                            case 'checklist':
+                                                hasAnswer = (answer.selectedOptionIds?.length || 0) > 0;
+                                                break;
+                                            case 'drag_drop':
+                                                hasAnswer = Object.keys(answer.dragDropPlacements || {}).length > 0;
+                                                break;
+                                            case 'matching':
+                                                hasAnswer = Object.keys(answer.matchingPairs || {}).length > 0;
+                                                break;
+                                            default:
+                                                hasAnswer = (answer.textAnswer?.trim().length || 0) > 0;
+                                        }
+                                    }
+
                                     const isCurrent = idx === currentItemIndex;
                                     return (
                                         <button
                                             key={item.id}
                                             onClick={() => setCurrentItemIndex(idx)}
                                             className={`w-8 h-8 rounded-lg text-sm font-bold transition-all ${isCurrent
-                                                    ? 'bg-indigo-500 text-white scale-110'
-                                                    : hasAnswer
-                                                        ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
-                                                        : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'
+                                                ? 'bg-indigo-500 text-white scale-110'
+                                                : hasAnswer
+                                                    ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                                                    : 'bg-slate-700/50 text-slate-400 hover:bg-slate-700'
                                                 }`}
                                             title={hasAnswer ? `ข้อ ${idx + 1} - ตอบแล้ว` : `ข้อ ${idx + 1}`}
                                         >
@@ -438,6 +768,15 @@ export default function ExamPage() {
                         </div>
                     </div>
 
+                    {/* Category Header (if new category) */}
+                    {currentCategory && (
+                        <div className="px-5 py-3 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-b border-slate-700/50">
+                            <p className="text-sm font-medium text-indigo-300">
+                                📚 {currentCategory}
+                            </p>
+                        </div>
+                    )}
+
                     {/* Question Content */}
                     {currentItem && (
                         <div className="flex-1 overflow-y-auto p-6">
@@ -453,31 +792,32 @@ export default function ExamPage() {
                                 </div>
                             </div>
 
+                            {/* Question-specific stimulus (embedded in right panel if no simulation) */}
+                            {currentItem.stimulusContent && !isSimulation && (
+                                <div className="mb-6">
+                                    <StimulusRenderer
+                                        stimuli={currentItem.stimulusContent}
+                                        randomSeed={randomSeed}
+                                        generatedValues={generatedValues}
+                                        onValuesGenerated={setGeneratedValues}
+                                    />
+                                </div>
+                            )}
+
                             {/* Answer Input */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <label className="text-sm font-medium text-slate-400">
                                         คำตอบของคุณ
                                     </label>
-                                    {answers[currentItem.id]?.trim() && (
+                                    {isCurrentQuestionAnswered && (
                                         <span className="flex items-center gap-1 text-xs text-emerald-400">
                                             <CheckCircle size={12} /> บันทึกแล้ว
                                         </span>
                                     )}
                                 </div>
-                                <textarea
-                                    value={answers[currentItem.id] || ""}
-                                    onChange={(e) => handleAnswerChange(currentItem.id, e.target.value)}
-                                    className="w-full min-h-[200px] p-5 rounded-2xl bg-slate-800/80 border-2 border-slate-700 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all resize-none text-white placeholder-slate-500 leading-relaxed text-base"
-                                    placeholder="พิมพ์คำตอบของคุณที่นี่..."
-                                />
-                                <div className="flex items-center justify-between text-xs text-slate-500">
-                                    <span>{answers[currentItem.id]?.length || 0} ตัวอักษร</span>
-                                    <span className="flex items-center gap-1">
-                                        <Clock size={12} />
-                                        ไม่มีจำกัดเวลา
-                                    </span>
-                                </div>
+
+                                {renderQuestionInput(currentItem)}
                             </div>
                         </div>
                     )}
@@ -490,8 +830,8 @@ export default function ExamPage() {
                                 onClick={goToPrevItem}
                                 disabled={isFirstItem}
                                 className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all ${isFirstItem
-                                        ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
-                                        : 'bg-slate-700 text-white hover:bg-slate-600'
+                                    ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed'
+                                    : 'bg-slate-700 text-white hover:bg-slate-600'
                                     }`}
                             >
                                 <ChevronLeft size={20} />
@@ -501,17 +841,39 @@ export default function ExamPage() {
                             {/* Mobile Question Pills */}
                             <div className="flex md:hidden items-center gap-1 overflow-x-auto px-2">
                                 {exam.items?.map((item, idx) => {
-                                    const hasAnswer = answers[item.id]?.trim().length > 0;
+                                    const answer = answers[item.id];
+                                    let hasAnswer = false;
+
+                                    if (answer) {
+                                        switch (item.questionType || 'extended_response') {
+                                            case 'multiple_choice':
+                                                hasAnswer = !!answer.selectedOptionId;
+                                                break;
+                                            case 'multiple_select':
+                                            case 'checklist':
+                                                hasAnswer = (answer.selectedOptionIds?.length || 0) > 0;
+                                                break;
+                                            case 'drag_drop':
+                                                hasAnswer = Object.keys(answer.dragDropPlacements || {}).length > 0;
+                                                break;
+                                            case 'matching':
+                                                hasAnswer = Object.keys(answer.matchingPairs || {}).length > 0;
+                                                break;
+                                            default:
+                                                hasAnswer = (answer.textAnswer?.trim().length || 0) > 0;
+                                        }
+                                    }
+
                                     const isCurrent = idx === currentItemIndex;
                                     return (
                                         <button
                                             key={item.id}
                                             onClick={() => setCurrentItemIndex(idx)}
                                             className={`flex-shrink-0 w-7 h-7 rounded text-xs font-bold transition-all ${isCurrent
-                                                    ? 'bg-indigo-500 text-white'
-                                                    : hasAnswer
-                                                        ? 'bg-emerald-500/20 text-emerald-400'
-                                                        : 'bg-slate-700/50 text-slate-500'
+                                                ? 'bg-indigo-500 text-white'
+                                                : hasAnswer
+                                                    ? 'bg-emerald-500/20 text-emerald-400'
+                                                    : 'bg-slate-700/50 text-slate-500'
                                                 }`}
                                         >
                                             {hasAnswer ? '✓' : idx + 1}
@@ -523,7 +885,7 @@ export default function ExamPage() {
                             {/* Next/Submit Button */}
                             {isLastItem ? (
                                 <button
-                                    onClick={handleSubmit}
+                                    onClick={() => handleSubmit(false)}
                                     disabled={isSubmitting || answeredCount === 0}
                                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none hover:-translate-y-0.5"
                                 >

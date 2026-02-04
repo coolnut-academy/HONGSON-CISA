@@ -25,7 +25,7 @@ import {
     getAllSampleExamOptions,
     getSampleExamById,
     type SampleExamKey
-} from "@/lib/data/sample-exam-c6";
+} from "@/lib/data/sample-exam-projectile";
 
 const LEGACY_COMPETENCIES = [
     { value: "1. อธิบายหลักการทางวิทยาศาสตร์", label: "1. อธิบายหลักการทางวิทยาศาสตร์" },
@@ -52,7 +52,8 @@ export default function CreateExamPage() {
         scenario: "",
         mediaType: "text" as MediaType,
         mediaUrl: "",
-        isActive: true
+        isActive: true,
+        timeLimit: 90
     });
 
     const competencyOptions = useMemo(() => getAllCompetencyOptions(), []);
@@ -67,7 +68,7 @@ export default function CreateExamPage() {
     }, [formData.competencyId, formData.subCompetencyId]);
 
     const [items, setItems] = useState<ExamItem[]>([
-        { id: generateItemId(), question: "", score: 10, rubricPrompt: "" }
+        { id: generateItemId(), question: "", questionType: 'extended_response', score: 10, rubricPrompt: "" }
     ]);
 
     useEffect(() => {
@@ -141,7 +142,7 @@ export default function CreateExamPage() {
     };
 
     const addItem = () => {
-        setItems(prev => [...prev, { id: generateItemId(), question: "", score: 10, rubricPrompt: "" }]);
+        setItems(prev => [...prev, { id: generateItemId(), question: "", questionType: 'extended_response', score: 10, rubricPrompt: "" }]);
     };
 
     const removeItem = (itemId: string) => {
@@ -163,7 +164,8 @@ export default function CreateExamPage() {
             scenario: sampleData.scenario,
             mediaType: sampleData.mediaType,
             mediaUrl: sampleData.mediaUrl,
-            isActive: true
+            isActive: true,
+            timeLimit: sampleData.timeLimit || 90
         });
 
         // Generate new IDs for items and set them
@@ -223,6 +225,7 @@ export default function CreateExamPage() {
                 mediaUrl: formData.mediaType === 'simulation' ? formData.mediaUrl : "",
                 items: items,
                 isActive: formData.isActive,
+                timeLimit: formData.timeLimit,
                 createdBy: user.uid,
                 createdAt: serverTimestamp(),
             });
@@ -269,9 +272,9 @@ export default function CreateExamPage() {
                             <Beaker size={20} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-[var(--text-primary)]">โหลดข้อสอบตัวอย่าง</h2>
+                            <h2 className="text-lg font-semibold text-[var(--text-primary)]">โหลดข้อสอบตัวอย่าง PISA-style</h2>
                             <p className="text-sm text-[var(--text-tertiary)]">
-                                เติมข้อสอบตัวอย่างสมรรถนะที่ 6 ตามพิมพ์เขียว Innovation Blueprint V2
+                                ข้อสอบสมรรถนะ ฟิสิกส์: การเคลื่อนที่แบบโพรเจกไทล์ (12 ข้อ 90 นาที)
                             </p>
                         </div>
                     </div>
@@ -293,7 +296,7 @@ export default function CreateExamPage() {
                     <p className="text-xs text-emerald-700 dark:text-emerald-400 flex items-start gap-2">
                         <Sparkles size={14} className="mt-0.5 flex-shrink-0" />
                         <span>
-                            <strong>Innovation Blueprint V2:</strong> ข้อสอบตัวอย่างนี้ออกแบบตามพิมพ์เขียวนวัตกรรมการวัดผลสมรรถนะ ประกอบด้วย 4 องค์ประกอบ ได้แก่ การเข้าใจปรากฏการณ์, การเชื่อมโยงคณิต/วิทย์, เทคโนโลยี และคุณลักษณะ/จริยธรรม พร้อมเกณฑ์การให้คะแนนระดับ 7-10
+                            <strong>PISA-style Assessment:</strong> ข้อสอบนี้ออกแบบตามแนวทาง PISA มี 5 หมวด 12 ข้อย่อย ประกอบด้วย Multiple Choice, Drag & Drop, Matching, Checklist, Short Response และ Extended Response พร้อมเกณฑ์การให้คะแนนระดับ 7-10
                         </span>
                     </p>
                 </div>
