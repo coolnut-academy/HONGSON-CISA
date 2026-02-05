@@ -118,7 +118,7 @@ function ChoiceOptionsEditor({
                         value={option.text}
                         onChange={(e) => updateOption(option.id, 'text', e.target.value)}
                         placeholder={`ตัวเลือก ${String.fromCharCode(65 + idx)}`}
-                        className="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)] text-[var(--text-primary)] text-sm"
+                        className="flex-1 px-3 py-2 rounded-lg bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-700 text-[var(--text-primary)] text-sm shadow-inner transition-colors focus:bg-white dark:focus:bg-slate-900"
                     />
                     <label className="flex items-center gap-1">
                         <input
@@ -156,13 +156,17 @@ function ChoiceOptionsEditor({
 function DragDropEditor({
     dragItems,
     dropZones,
+    backgroundImageUrl,
     onDragItemsChange,
-    onDropZonesChange
+    onDropZonesChange,
+    onBackgroundChange
 }: {
     dragItems: DragItem[];
     dropZones: DropZone[];
+    backgroundImageUrl?: string;
     onDragItemsChange: (items: DragItem[]) => void;
     onDropZonesChange: (zones: DropZone[]) => void;
+    onBackgroundChange: (url: string) => void;
 }) {
     const addDragItem = () => {
         onDragItemsChange([...dragItems, { id: generateId(), text: '' }]);
@@ -172,74 +176,188 @@ function DragDropEditor({
         onDropZonesChange([...dropZones, { id: generateId(), label: '', correctItemId: '' }]);
     };
 
+    const updateDragItem = (id: string, updates: Partial<DragItem>) => {
+        onDragItemsChange(dragItems.map(d => d.id === id ? { ...d, ...updates } : d));
+    };
+
     return (
-        <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">คำตอบที่ลากได้</label>
-                {dragItems.map((item, idx) => (
-                    <div key={item.id} className="flex items-center gap-2">
-                        <GripVertical size={14} className="text-slate-500" />
-                        <input
-                            type="text"
-                            value={item.text}
-                            onChange={(e) => onDragItemsChange(
-                                dragItems.map(d => d.id === item.id ? { ...d, text: e.target.value } : d)
-                            )}
-                            placeholder={`คำตอบ ${idx + 1}`}
-                            className="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)] text-sm"
+        <div className="space-y-6">
+            {/* Background Image Config */}
+            <div className="p-4 rounded-xl bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+                    🖼️ รูปภาพพื้นหลัง (Optional)
+                </label>
+                <div className="flex gap-2 mb-2">
+                    <input
+                        type="url"
+                        value={backgroundImageUrl || ''}
+                        onChange={(e) => onBackgroundChange(e.target.value)}
+                        placeholder="https://example.com/diagram.png"
+                        className="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-600 text-sm text-slate-900 dark:text-white shadow-inner"
+                    />
+                </div>
+                {backgroundImageUrl && (
+                    <div className="mt-2 p-2 bg-slate-900 rounded-lg">
+                        <img
+                            src={backgroundImageUrl}
+                            alt="Background Preview"
+                            className="max-h-48 rounded object-contain mx-auto"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
+                    </div>
+                )}
+                <p className="text-xs text-slate-500 mt-1">
+                    ใส่ URL ของรูปภาพโจทย์หรือแผนภาพ เพื่อให้นักเรียนลากคำตอบไปวางบนตำแหน่งที่ถูกต้อง
+                </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Draggable Items Editor */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-[var(--text-secondary)]">
+                            📦 ตัวเลือกคำตอบ (Draggables)
+                        </label>
+                        <span className="text-xs text-slate-400">รูปภาพ + ป้ายชื่อ</span>
+                    </div>
+
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                        {dragItems.map((item, idx) => (
+                            <div key={item.id} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm relative group transition-all hover:border-[var(--accent-primary)]">
+                                <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        type="button"
+                                        onClick={() => onDragItemsChange(dragItems.filter(d => d.id !== item.id))}
+                                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-2 cursor-move text-slate-400">
+                                        <GripVertical size={16} />
+                                    </div>
+
+                                    <div className="flex-1 space-y-2.5">
+                                        {/* Label Input */}
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={item.text}
+                                                onChange={(e) => updateDragItem(item.id, { text: e.target.value })}
+                                                placeholder={`ป้ายชื่อคำตอบ ${idx + 1}`}
+                                                className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:border-[var(--accent-primary)] focus:bg-white transition-all"
+                                            />
+                                        </div>
+
+                                        {/* Image URL Input */}
+                                        <div className="flex items-center gap-2">
+                                            <div className={`p-1.5 rounded-md ${item.imageUrl ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                <Image size={14} />
+                                            </div>
+                                            <input
+                                                type="url"
+                                                value={item.imageUrl || ''}
+                                                onChange={(e) => updateDragItem(item.id, { imageUrl: e.target.value })}
+                                                placeholder="URL รูปภาพ (ไม่บังคับ)"
+                                                className="flex-1 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 focus:border-[var(--accent-primary)] focus:bg-white transition-all"
+                                            />
+                                        </div>
+
+                                        {/* Preview */}
+                                        {item.imageUrl && (
+                                            <div className="flex items-center gap-3 p-2 rounded-lg bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800/50">
+                                                <div className="w-16 h-16 bg-white rounded border border-slate-200 flex items-center justify-center overflow-hidden">
+                                                    <img
+                                                        src={item.imageUrl}
+                                                        alt="preview"
+                                                        className="w-full h-full object-contain"
+                                                        onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
+                                                    />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-xs font-medium text-slate-500">Preview</p>
+                                                    <p className="text-[10px] text-slate-400 truncate">{item.text || 'No Label'}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
                         <button
                             type="button"
-                            onClick={() => onDragItemsChange(dragItems.filter(d => d.id !== item.id))}
-                            className="p-1 text-red-500 hover:bg-red-500/10 rounded"
+                            onClick={addDragItem}
+                            className="w-full py-2 flex items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 text-slate-500 hover:text-[var(--accent-primary)] transition-all text-sm font-medium"
                         >
-                            <X size={16} />
+                            <Plus size={16} />
+                            <span>เพิ่มตัวเลือกคำตอบ</span>
                         </button>
                     </div>
-                ))}
-                <button type="button" onClick={addDragItem} className="text-sm text-indigo-500">
-                    <Plus size={14} className="inline" /> เพิ่มคำตอบ
-                </button>
-            </div>
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">ช่องวาง</label>
-                {dropZones.map((zone, idx) => (
-                    <div key={zone.id} className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={zone.label}
-                                onChange={(e) => onDropZonesChange(
-                                    dropZones.map(z => z.id === zone.id ? { ...z, label: e.target.value } : z)
-                                )}
-                                placeholder={`ป้ายช่อง ${idx + 1}`}
-                                className="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)] text-sm"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => onDropZonesChange(dropZones.filter(z => z.id !== zone.id))}
-                                className="p-1 text-red-500 hover:bg-red-500/10 rounded"
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-                        <select
-                            value={zone.correctItemId}
-                            onChange={(e) => onDropZonesChange(
-                                dropZones.map(z => z.id === zone.id ? { ...z, correctItemId: e.target.value } : z)
-                            )}
-                            className="w-full px-2 py-1 rounded text-xs bg-slate-700 border border-slate-600"
-                        >
-                            <option value="">-- คำตอบที่ถูก --</option>
-                            {dragItems.map(item => (
-                                <option key={item.id} value={item.id}>{item.text || '(ว่าง)'}</option>
-                            ))}
-                        </select>
+                </div>
+
+                {/* Drop Zones Editor */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium text-[var(--text-secondary)]">
+                            🎯 ช่องวาง (Drop Zones)
+                        </label>
+                        <span className="text-xs text-slate-400">ข้อความเท่านั้น</span>
                     </div>
-                ))}
-                <button type="button" onClick={addDropZone} className="text-sm text-indigo-500">
-                    <Plus size={14} className="inline" /> เพิ่มช่องวาง
-                </button>
+
+                    <div className="space-y-2">
+                        {dropZones.map((zone, idx) => (
+                            <div key={zone.id} className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl space-y-2">
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={zone.label}
+                                        onChange={(e) => onDropZonesChange(
+                                            dropZones.map(z => z.id === zone.id ? { ...z, label: e.target.value } : z)
+                                        )}
+                                        placeholder={`ป้ายชื่อช่องวาง ${idx + 1}`}
+                                        className="flex-1 px-3 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-700 text-sm shadow-sm transition-colors focus:border-[var(--accent-primary)]"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => onDropZonesChange(dropZones.filter(z => z.id !== zone.id))}
+                                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                                <div className="flex items-center gap-2 bg-white dark:bg-slate-950 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                                    <CheckCircle size={14} className="text-emerald-500" />
+                                    <span className="text-xs text-slate-500 whitespace-nowrap">เฉลย:</span>
+                                    <select
+                                        value={zone.correctItemId}
+                                        onChange={(e) => onDropZonesChange(
+                                            dropZones.map(z => z.id === zone.id ? { ...z, correctItemId: e.target.value } : z)
+                                        )}
+                                        className="flex-1 text-xs bg-transparent border-none p-0 focus:ring-0 text-slate-700 dark:text-slate-300 font-medium"
+                                    >
+                                        <option value="">-- เลือกคำตอบที่ถูกต้อง --</option>
+                                        {dragItems.map(item => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.text || '(ไม่มีป้ายชื่อ)'} {item.imageUrl ? '(มีรูป)' : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={addDropZone}
+                            className="w-full py-2 flex items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 hover:border-emerald-500 hover:bg-emerald-50 text-slate-500 hover:text-emerald-600 transition-all text-sm font-medium"
+                        >
+                            <Plus size={16} />
+                            <span>เพิ่มช่องวาง</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -286,7 +404,7 @@ function StimulusEditor({
     };
 
     return (
-        <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 space-y-3">
+        <div className="p-4 rounded-xl bg-slate-100/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 space-y-3">
             <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={14} className="text-amber-400" />
                 <span className="text-sm font-medium text-slate-300">สื่อประกอบคำถาม (Stimulus)</span>
@@ -304,7 +422,7 @@ function StimulusEditor({
                             onClick={() => handleTypeChange(opt.value)}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${isSelected
                                 ? 'bg-indigo-500 text-white'
-                                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                                : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                                 }`}
                         >
                             <Icon size={14} />
@@ -325,7 +443,7 @@ function StimulusEditor({
                                 value={currentStimulus.content}
                                 onChange={(e) => updateContent(e.target.value)}
                                 placeholder="https://phet.colorado.edu/sims/html/..."
-                                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-sm text-white placeholder:text-slate-500"
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 shadow-inner"
                             />
                         </div>
                     )}
@@ -338,7 +456,7 @@ function StimulusEditor({
                                 value={currentStimulus.content}
                                 onChange={(e) => updateContent(e.target.value)}
                                 placeholder="https://example.com/image.png"
-                                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-sm text-white placeholder:text-slate-500"
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 shadow-inner"
                             />
                             {currentStimulus.content && (
                                 <div className="mt-2 p-2 bg-slate-900 rounded-lg">
@@ -361,7 +479,7 @@ function StimulusEditor({
                                 value={currentStimulus.content}
                                 onChange={(e) => updateContent(e.target.value)}
                                 placeholder="https://example.com/page"
-                                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-sm text-white placeholder:text-slate-500"
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 shadow-inner"
                             />
                             <p className="text-xs text-slate-500 mt-1">
                                 หมายเหตุ: บางเว็บไซต์อาจไม่อนุญาตให้ฝังใน iframe
@@ -377,7 +495,7 @@ function StimulusEditor({
                                 onChange={(e) => updateContent(e.target.value)}
                                 placeholder="ข้อความหรือข้อมูลเพิ่มเติมสำหรับคำถามข้อนี้..."
                                 rows={3}
-                                className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-sm text-white placeholder:text-slate-500"
+                                className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 shadow-inner"
                             />
                         </div>
                     )}
@@ -390,7 +508,7 @@ function StimulusEditor({
                             value={currentStimulus.caption || ''}
                             onChange={(e) => updateCaption(e.target.value)}
                             placeholder="เช่น: รูปที่ 1 แสดงวิถีการเคลื่อนที่..."
-                            className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-sm text-white placeholder:text-slate-500"
+                            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-600 text-sm text-slate-900 dark:text-white placeholder:text-slate-500 shadow-inner"
                         />
                     </div>
                 </div>
@@ -419,75 +537,187 @@ function MatchingEditor({
         onRightChange([...rightColumn, { id: generateId(), text: '', correctMatchId: '' }]);
     };
 
+    const updateLeft = (id: string, updates: Partial<MatchItem>) => {
+        onLeftChange(leftColumn.map(item => item.id === id ? { ...item, ...updates } : item));
+    };
+
+    const updateRight = (id: string, updates: Partial<MatchPair>) => {
+        onRightChange(rightColumn.map(item => item.id === id ? { ...item, ...updates } : item));
+    };
+
     return (
-        <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">รายการ (ซ้าย)</label>
-                {leftColumn.map((item, idx) => (
-                    <div key={item.id} className="flex items-center gap-2">
-                        <span className="w-5 text-center text-xs text-slate-500">{idx + 1}</span>
-                        <input
-                            type="text"
-                            value={item.text}
-                            onChange={(e) => onLeftChange(
-                                leftColumn.map(l => l.id === item.id ? { ...l, text: e.target.value } : l)
-                            )}
-                            placeholder={`รายการ ${idx + 1}`}
-                            className="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)] text-sm"
-                        />
+        <div className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column (Questions/Prompts) */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
+                        <label className="text-sm font-semibold text-[var(--text-secondary)]">
+                            📌 คอลัมน์ซ้าย (รายการหลัก)
+                        </label>
+                        <span className="text-xs text-slate-400">รูปภาพ + ข้อความ</span>
+                    </div>
+
+                    <div className="space-y-3">
+                        {leftColumn.map((item, idx) => (
+                            <div key={item.id} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm group hover:border-[var(--accent-primary)] transition-all">
+                                <div className="flex items-start gap-3 relative">
+                                    <div className="mt-2 w-6 flex-shrink-0 flex items-center justify-center">
+                                        <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500 flex items-center justify-center">
+                                            {idx + 1}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex-1 space-y-2.5">
+                                        <div className="pr-8">
+                                            <input
+                                                type="text"
+                                                value={item.text}
+                                                onChange={(e) => updateLeft(item.id, { text: e.target.value })}
+                                                placeholder={`ข้อความรายการ ${idx + 1}`}
+                                                className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:border-[var(--accent-primary)] focus:bg-white transition-all"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            <div className={`p-1.5 rounded-md ${item.imageUrl ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                <Image size={14} />
+                                            </div>
+                                            <input
+                                                type="url"
+                                                value={item.imageUrl || ''}
+                                                onChange={(e) => updateLeft(item.id, { imageUrl: e.target.value })}
+                                                placeholder="URL รูปภาพ (ไม่บังคับ)"
+                                                className="flex-1 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 focus:border-[var(--accent-primary)] focus:bg-white transition-all"
+                                            />
+                                        </div>
+
+                                        {item.imageUrl && (
+                                            <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800/50 flex justify-center">
+                                                <img
+                                                    src={item.imageUrl}
+                                                    alt="preview"
+                                                    className="max-h-24 rounded object-contain"
+                                                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => onLeftChange(leftColumn.filter(l => l.id !== item.id))}
+                                        className="absolute top-0 right-0 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
                         <button
                             type="button"
-                            onClick={() => onLeftChange(leftColumn.filter(l => l.id !== item.id))}
-                            className="p-1 text-red-500 hover:bg-red-500/10 rounded"
+                            onClick={addLeft}
+                            className="w-full py-2 flex items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 hover:border-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/5 text-slate-500 hover:text-[var(--accent-primary)] transition-all text-sm font-medium"
                         >
-                            <X size={16} />
+                            <Plus size={16} />
+                            <span>เพิ่มรายการซ้าย</span>
                         </button>
                     </div>
-                ))}
-                <button type="button" onClick={addLeft} className="text-sm text-indigo-500">
-                    <Plus size={14} className="inline" /> เพิ่มรายการ
-                </button>
-            </div>
-            <div className="space-y-2">
-                <label className="text-sm font-medium text-[var(--text-secondary)]">คำตอบ (ขวา)</label>
-                {rightColumn.map((pair, idx) => (
-                    <div key={pair.id} className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <span className="w-5 text-center text-xs text-slate-500">{String.fromCharCode(65 + idx)}</span>
-                            <input
-                                type="text"
-                                value={pair.text}
-                                onChange={(e) => onRightChange(
-                                    rightColumn.map(r => r.id === pair.id ? { ...r, text: e.target.value } : r)
-                                )}
-                                placeholder={`คำตอบ ${String.fromCharCode(65 + idx)}`}
-                                className="flex-1 px-3 py-2 rounded-lg bg-[var(--glass-bg)] border border-[var(--glass-border)] text-sm"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => onRightChange(rightColumn.filter(r => r.id !== pair.id))}
-                                className="p-1 text-red-500 hover:bg-red-500/10 rounded"
-                            >
-                                <X size={16} />
-                            </button>
-                        </div>
-                        <select
-                            value={pair.correctMatchId}
-                            onChange={(e) => onRightChange(
-                                rightColumn.map(r => r.id === pair.id ? { ...r, correctMatchId: e.target.value } : r)
-                            )}
-                            className="w-full px-2 py-1 rounded text-xs bg-slate-700 border border-slate-600"
-                        >
-                            <option value="">-- ตรงกับรายการ --</option>
-                            {leftColumn.map((item, i) => (
-                                <option key={item.id} value={item.id}>{i + 1}. {item.text || '(ว่าง)'}</option>
-                            ))}
-                        </select>
+                </div>
+
+                {/* Right Column (Answers) */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
+                        <label className="text-sm font-semibold text-[var(--text-secondary)]">
+                            🧩 คอลัมน์ขวา (ตัวเลือกคำตอบ)
+                        </label>
+                        <span className="text-xs text-slate-400">รูปภาพ + ป้ายชื่อ</span>
                     </div>
-                ))}
-                <button type="button" onClick={addRight} className="text-sm text-indigo-500">
-                    <Plus size={14} className="inline" /> เพิ่มคำตอบ
-                </button>
+
+                    <div className="space-y-3">
+                        {rightColumn.map((pair, idx) => (
+                            <div key={pair.id} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm group hover:border-[var(--accent-success)] transition-all">
+                                <div className="flex items-start gap-3 relative">
+                                    <div className="mt-2 w-6 flex-shrink-0 flex items-center justify-center">
+                                        <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-xs font-bold text-slate-500 flex items-center justify-center">
+                                            {String.fromCharCode(65 + idx)}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex-1 space-y-2.5">
+                                        <div className="pr-8">
+                                            <input
+                                                type="text"
+                                                value={pair.text}
+                                                onChange={(e) => updateRight(pair.id, { text: e.target.value })}
+                                                placeholder={`คำตอบ ${String.fromCharCode(65 + idx)}`}
+                                                className="w-full px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm focus:border-[var(--accent-success)] focus:bg-white transition-all"
+                                            />
+                                        </div>
+
+                                        <div className="flex items-center gap-2">
+                                            <div className={`p-1.5 rounded-md ${pair.imageUrl ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                <Image size={14} />
+                                            </div>
+                                            <input
+                                                type="url"
+                                                value={pair.imageUrl || ''}
+                                                onChange={(e) => updateRight(pair.id, { imageUrl: e.target.value })}
+                                                placeholder="URL รูปภาพ (ไม่บังคับ)"
+                                                className="flex-1 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 focus:border-[var(--accent-success)] focus:bg-white transition-all"
+                                            />
+                                        </div>
+
+                                        {pair.imageUrl && (
+                                            <div className="mt-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800/50 flex justify-center">
+                                                <img
+                                                    src={pair.imageUrl}
+                                                    alt="preview"
+                                                    className="max-h-24 rounded object-contain"
+                                                    onError={(e) => { (e.target as HTMLImageElement).style.opacity = '0.3'; }}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                                            <div className="flex items-center gap-2">
+                                                <CheckCircle size={14} className="text-emerald-500" />
+                                                <span className="text-xs text-slate-500 whitespace-nowrap">คู่กับ:</span>
+                                                <select
+                                                    value={pair.correctMatchId}
+                                                    onChange={(e) => updateRight(pair.id, { correctMatchId: e.target.value })}
+                                                    className="flex-1 text-xs bg-transparent border-none p-0 focus:ring-0 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
+                                                >
+                                                    <option value="">-- เลือกคู่ที่ถูกต้อง --</option>
+                                                    {leftColumn.map((item, i) => (
+                                                        <option key={item.id} value={item.id}>
+                                                            {i + 1}. {item.text || '(ว่าง)'} {item.imageUrl ? '(มีรูป)' : ''}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => onRightChange(rightColumn.filter(r => r.id !== pair.id))}
+                                        className="absolute top-0 right-0 p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={addRight}
+                            className="w-full py-2 flex items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 hover:border-[var(--accent-success)] hover:bg-[var(--accent-success)]/10 text-slate-500 hover:text-emerald-600 transition-all text-sm font-medium"
+                        >
+                            <Plus size={16} />
+                            <span>เพิ่มตัวเลือกขวา</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -1015,10 +1245,16 @@ export default function EditExamPage() {
                                     className="rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border)] overflow-hidden"
                                 >
                                     {/* Item Header */}
-                                    <button
-                                        type="button"
+                                    <div
+                                        role="button"
+                                        tabIndex={0}
                                         onClick={() => toggleItemExpand(item.id)}
-                                        className="w-full flex items-center justify-between p-4 hover:bg-slate-800/50 transition-colors"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                toggleItemExpand(item.id);
+                                            }
+                                        }}
+                                        className="w-full flex items-center justify-between p-4 hover:bg-slate-800/50 transition-colors cursor-pointer"
                                     >
                                         <div className="flex items-center gap-3">
                                             <span className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-500 flex items-center justify-center text-sm font-bold">
@@ -1044,7 +1280,7 @@ export default function EditExamPage() {
                                                 <button
                                                     type="button"
                                                     onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}
-                                                    className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                                                    className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors z-10 relative"
                                                     title="ลบข้อนี้"
                                                 >
                                                     <Trash2 size={16} />
@@ -1052,7 +1288,7 @@ export default function EditExamPage() {
                                             )}
                                             {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                                         </div>
-                                    </button>
+                                    </div>
 
                                     {/* Item Content (Expanded) */}
                                     {isExpanded && (
@@ -1130,8 +1366,10 @@ export default function EditExamPage() {
                                                 <DragDropEditor
                                                     dragItems={item.dragItems || []}
                                                     dropZones={item.dropZones || []}
+                                                    backgroundImageUrl={item.backgroundImageUrl}
                                                     onDragItemsChange={(dragItems) => handleItemChange(item.id, { dragItems })}
                                                     onDropZonesChange={(dropZones) => handleItemChange(item.id, { dropZones })}
+                                                    onBackgroundChange={(url) => handleItemChange(item.id, { backgroundImageUrl: url })}
                                                 />
                                             )}
 

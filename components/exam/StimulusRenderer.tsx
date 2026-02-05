@@ -15,6 +15,7 @@ import {
     Scatter,
 } from "recharts";
 import Image from "next/image";
+import MathRenderer from "@/components/ui/MathRenderer";
 
 interface StimulusRendererProps {
     stimuli: StimulusContent[];
@@ -253,7 +254,7 @@ export default function StimulusRenderer({
                     {stimulus.type === 'text' && (
                         <div className="p-4">
                             <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
-                                {stimulus.content}
+                                <MathRenderer text={stimulus.content} />
                             </p>
                             {stimulus.caption && (
                                 <p className="text-xs text-slate-500 mt-2 italic">{stimulus.caption}</p>

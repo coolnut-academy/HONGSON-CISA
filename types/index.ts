@@ -39,6 +39,7 @@ export interface ChoiceOption {
 export interface DragItem {
     id: string;
     text: string;
+    imageUrl?: string; // Optional image URL
 }
 
 export interface DropZone {
@@ -51,12 +52,14 @@ export interface DropZone {
 export interface MatchItem {
     id: string;
     text: string;
+    imageUrl?: string; // Optional image URL
 }
 
 export interface MatchPair {
     id: string;
     text: string;
     correctMatchId: string; // ID of MatchItem it should match to
+    imageUrl?: string; // Optional image URL
 }
 
 // Stimulus content types
@@ -105,6 +108,7 @@ export interface ExamItem {
     // For drag_drop
     dragItems?: DragItem[];
     dropZones?: DropZone[];
+    backgroundImageUrl?: string;
 
     // For matching
     leftColumn?: MatchItem[];
@@ -172,4 +176,5 @@ export interface Submission {
     // Random values used for graph generation (for consistent grading)
     randomSeed?: number;
     generatedValues?: Record<string, number>;
+    detailedFeedback?: Record<string, string>; // Map itemId -> feedback
 }

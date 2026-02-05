@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useRoleProtection } from "@/hooks/useRoleProtection";
 import { db } from "@/lib/firebase";
@@ -29,6 +30,8 @@ export default function StudentDashboard() {
     const { isLoading: isAuthLoading } = useRoleProtection(['student']);
     const { user, logout } = useAuth();
 
+    const router = useRouter();
+
     const [examsByCompetency, setExamsByCompetency] = useState<Record<string, ExamWithStatus[]>>({});
     const [loadingData, setLoadingData] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -53,7 +56,10 @@ export default function StudentDashboard() {
                     where("studentId", "==", user.uid)
                 );
                 const submissionsSnap = await getDocs(submissionsQuery);
-                const submissionsList = submissionsSnap.docs.map(doc => doc.data() as Submission);
+                const submissionsList = submissionsSnap.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                } as Submission));
 
                 // 3. Map Submissions to Exams by Competency ID
                 const processedExams: Record<string, ExamWithStatus[]> = {};
@@ -114,6 +120,11 @@ export default function StudentDashboard() {
     // Count total exams and completed
     const totalExams = Object.values(examsByCompetency).flat().length;
     const completedExams = Object.values(examsByCompetency).flat().filter(e => e.submission).length;
+
+    const handleViewResult = (exam: ExamWithStatus) => {
+        if (!exam.submission) return;
+        router.push(`/student/result/${exam.submission.id}`);
+    };
 
     if (isAuthLoading || loadingData) {
         return (
@@ -248,9 +259,18 @@ export default function StudentDashboard() {
                                                         <Clock size={18} /> รอการตรวจผล
                                                     </div>
                                                 ) : (
-                                                    <div className="w-full flex items-center justify-between badge-glass badge-success py-3 px-4">
-                                                        <span className="flex items-center gap-2 text-sm"><CheckCircle2 size={18} /> ตรวจแล้ว</span>
-                                                        <span className="text-lg font-bold">{exam.submission.score}/10</span>
+                                                    <div className="flex gap-2">
+                                                        <div className="flex-1 flex items-center justify-between badge-glass badge-success py-3 px-4">
+                                                            <span className="flex items-center gap-2 text-sm"><CheckCircle2 size={18} /> ตรวจแล้ว</span>
+                                                            <span className="text-lg font-bold">{exam.submission.score ?? 0}/10</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => handleViewResult(exam)}
+                                                            className="p-3 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border-subtle)] hover:bg-[var(--glass-border)] text-[var(--accent-primary)] transition-colors"
+                                                            title="ดูผลการประเมิน"
+                                                        >
+                                                            <BookOpen size={20} />
+                                                        </button>
                                                     </div>
                                                 )}
                                             </div>
@@ -311,9 +331,18 @@ export default function StudentDashboard() {
                                                 <Clock size={18} /> รอการตรวจผล
                                             </div>
                                         ) : (
-                                            <div className="w-full flex items-center justify-between badge-glass badge-success py-3 px-4">
-                                                <span className="flex items-center gap-2 text-sm"><CheckCircle2 size={18} /> ตรวจแล้ว</span>
-                                                <span className="text-lg font-bold">{exam.submission.score}/10</span>
+                                            <div className="flex gap-2">
+                                                <div className="flex-1 flex items-center justify-between badge-glass badge-success py-3 px-4">
+                                                    <span className="flex items-center gap-2 text-sm"><CheckCircle2 size={18} /> ตรวจแล้ว</span>
+                                                    <span className="text-lg font-bold">{exam.submission.score ?? 0}/10</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleViewResult(exam)}
+                                                    className="p-3 rounded-xl bg-[var(--glass-bg)] border border-[var(--glass-border-subtle)] hover:bg-[var(--glass-border)] text-[var(--accent-primary)] transition-colors"
+                                                    title="ดูผลการประเมิน"
+                                                >
+                                                    <BookOpen size={20} />
+                                                </button>
                                             </div>
                                         )}
                                     </div>

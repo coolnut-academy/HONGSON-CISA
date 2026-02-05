@@ -65,17 +65,32 @@ service cloud.firestore {
     
     // Submissions collection
     match /submissions/{submissionId} {
-      // Users can read their own submissions
-      allow read: if isAuthenticated() && resource.data.studentId == request.auth.uid;
-      // Admins can read all submissions
-      allow read: if isAdmin();
+      // Allow 'get' for ANY authenticated user if the doc is missing (returns exists: false)
+      // or if it's their own document.
+      allow get: if isAuthenticated() && (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
+      
+      // 'list' still restricted to own docs or admins
+      allow list: if isAdmin() || (isAuthenticated() && resource.data.studentId == request.auth.uid);
+      
       // Authenticated users can create submissions
       allow create: if isAuthenticated();
-      // Only admins can update submissions (for grading)
-      allow update: if isAdmin();
-      // Prevent deletion
-      allow delete: if false;
+            
+      // Only admins can update/delete
+      allow update, delete: if isAdmin();
     }
+
+    // Submission Archives collection (for history)
+    match /submission_archives/{archiveId} {
+      // Allow 'get' similarly to submissions
+      allow get: if isAuthenticated() && (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
+      
+      // Admins can manage everything
+      allow list, create, update, delete: if isAdmin();
+      
+      // Students can list their own archives
+      allow list: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+    }
+
     
     // AI Grading config/results
     match /ai_grading/{gradingId} {

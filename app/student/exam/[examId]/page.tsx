@@ -38,6 +38,7 @@ import {
     ExamTimer,
     StimulusRenderer
 } from "@/components/exam";
+import MathRenderer from "@/components/ui/MathRenderer";
 
 export default function ExamPage() {
     const params = useParams();
@@ -787,7 +788,7 @@ export default function ExamPage() {
                                         <span className="text-indigo-400 font-bold">{currentItemIndex + 1}</span>
                                     </div>
                                     <p className="text-white font-medium leading-relaxed text-lg pt-1">
-                                        {currentItem.question}
+                                        <MathRenderer text={currentItem.question} />
                                     </p>
                                 </div>
                             </div>

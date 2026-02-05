@@ -14,7 +14,7 @@ import {
     useSensor,
     useSensors,
 } from "@dnd-kit/core";
-import { GripVertical, X } from "lucide-react";
+import { GripVertical, X, Image as ImageIcon } from "lucide-react";
 
 interface DragDropProps {
     dragItems: DragItem[];
@@ -24,7 +24,67 @@ interface DragDropProps {
     disabled?: boolean;
 }
 
-// Draggable Item Component
+// ──────────────────────────────────────────────
+// 1. STANDARDIZED ITEM CARD (CORE UI)
+// ──────────────────────────────────────────────
+const ITEM_DIMENSIONS = "w-[150px] h-[150px]"; // Fixed standard size
+
+function DragItemCard({
+    item,
+    isOverlay = false,
+    isPlaced = false
+}: {
+    item: DragItem;
+    isOverlay?: boolean;
+    isPlaced?: boolean;
+}) {
+    // Styles based on state (Default vs Overlay vs Placed)
+    const baseStyles = "relative flex flex-col items-center justify-between p-3 rounded-xl transition-all border-2 overflow-hidden bg-white select-none";
+
+    const stateStyles = isOverlay
+        ? "border-accent-primary shadow-xl scale-105 z-50 bg-indigo-50/90 backdrop-blur-sm"
+        : isPlaced
+            ? "border-accent-success/50 bg-emerald-50/50"
+            : "border-glass-border hover:border-accent-primary/60 hover:shadow-md cursor-grab active:cursor-grabbing";
+
+    return (
+        <div className={`${ITEM_DIMENSIONS} ${baseStyles} ${stateStyles}`}>
+            {/* Drag Handle Indicator */}
+            {!isPlaced && (
+                <div className="absolute top-2 right-2 text-slate-300">
+                    <GripVertical className="w-4 h-4" />
+                </div>
+            )}
+
+            {/* Image Container - Fixed Constraint */}
+            <div className="flex-1 w-full flex items-center justify-center overflow-hidden mb-2 relative">
+                {item.imageUrl ? (
+                    <img
+                        src={item.imageUrl}
+                        alt={item.text}
+                        className="w-full h-full object-contain pointer-events-none"
+                    />
+                ) : (
+                    // Fallback placeholder if no image
+                    <div className="w-full h-full flex items-center justify-center bg-slate-50 rounded-lg border border-slate-100/50">
+                        <ImageIcon className="w-8 h-8 text-slate-300" />
+                    </div>
+                )}
+            </div>
+
+            {/* Label Container - Truncated, One Line */}
+            <div className={`w-full text-center px-1 py-1.5 rounded-lg ${isOverlay ? 'bg-accent-primary text-white' : 'bg-slate-100 text-text-secondary'}`}>
+                <p className="text-xs font-semibold truncate w-full" title={item.text}>
+                    {item.text}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+// ──────────────────────────────────────────────
+// 2. DRAGGABLE COMPONENT
+// ──────────────────────────────────────────────
 function DraggableItem({ item, isPlaced }: { item: DragItem; isPlaced: boolean }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: item.id,
@@ -33,9 +93,13 @@ function DraggableItem({ item, isPlaced }: { item: DragItem; isPlaced: boolean }
 
     const style = transform ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        opacity: isDragging ? 0 : 1, // Hide original when dragging (overlay takes over)
     } : undefined;
 
-    if (isPlaced) return null;
+    if (isPlaced) {
+        // Placeholder for when item is moved out
+        return <div className={`${ITEM_DIMENSIONS} rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30`} />;
+    }
 
     return (
         <div
@@ -43,24 +107,28 @@ function DraggableItem({ item, isPlaced }: { item: DragItem; isPlaced: boolean }
             style={style}
             {...listeners}
             {...attributes}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500/20 to-indigo-500/20 border-2 border-purple-500/50 text-white cursor-grab active:cursor-grabbing transition-all ${isDragging ? 'opacity-50 scale-105 shadow-xl shadow-purple-500/30' : 'hover:border-purple-400'
-                }`}
+            // Use tabindex to allow keyboard focus
+            tabIndex={0}
+            className="focus:outline-none focus:ring-2 focus:ring-accent-primary rounded-xl"
         >
-            <GripVertical className="w-5 h-5 text-purple-400 flex-shrink-0" />
-            <span className="text-sm font-medium">{item.text}</span>
+            <DragItemCard item={item} />
         </div>
     );
 }
 
-// Droppable Zone Component
+// ──────────────────────────────────────────────
+// 3. DROP ZONE COMPONENT
+// ──────────────────────────────────────────────
 function DroppableZone({
     zone,
     placedItem,
-    onRemove
+    onRemove,
+    disabled
 }: {
     zone: DropZone;
     placedItem?: DragItem;
     onRemove: () => void;
+    disabled?: boolean;
 }) {
     const { isOver, setNodeRef } = useDroppable({
         id: zone.id,
@@ -69,43 +137,49 @@ function DroppableZone({
     return (
         <div
             ref={setNodeRef}
-            className={`relative min-h-[80px] p-4 rounded-xl border-2 border-dashed transition-all ${isOver
-                    ? 'bg-indigo-500/20 border-indigo-400 shadow-lg shadow-indigo-500/20'
+            className={`relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all min-h-[180px]
+                ${isOver
+                    ? 'border-accent-primary bg-accent-primary/5 shadow-[0_0_20px_rgba(14,97,113,0.1)] scale-[1.02]'
                     : placedItem
-                        ? 'bg-emerald-500/10 border-emerald-500/50'
-                        : 'bg-slate-800/30 border-slate-600 hover:border-slate-500'
+                        ? 'border-accent-success/40 bg-white/60'
+                        : 'border-dashed border-slate-300 bg-slate-50/50 hover:border-slate-400'
                 }`}
         >
             {/* Zone Label */}
-            <div className="absolute -top-3 left-4 px-2 bg-slate-900">
-                <span className="text-xs font-medium text-slate-400">{zone.label}</span>
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 shadow-sm z-10">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{zone.label}</span>
             </div>
 
             {/* Content */}
             {placedItem ? (
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/50">
-                        <span className="text-sm text-emerald-300">{placedItem.text}</span>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={onRemove}
-                        className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-500 hover:text-red-400 transition-colors"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
+                <div className="relative group">
+                    <DragItemCard item={placedItem} isPlaced />
+
+                    {/* Remove Action */}
+                    {!disabled && (
+                        <button
+                            type="button"
+                            onClick={onRemove}
+                            className="absolute -top-2 -right-2 p-1.5 rounded-full bg-white border border-slate-200 text-slate-400 hover:text-accent-danger hover:border-accent-danger shadow-md transition-all opacity-0 group-hover:opacity-100 md:opacity-100"
+                            aria-label={`Remove ${placedItem.text} from ${zone.label}`}
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
             ) : (
-                <div className="flex items-center justify-center h-full min-h-[48px]">
-                    <span className="text-sm text-slate-500">
-                        {isOver ? 'วางที่นี่' : 'ลากมาวางที่นี่'}
-                    </span>
+                <div className="flex flex-col items-center justify-center text-slate-400 opacity-60">
+                    <div className="w-12 h-12 rounded-full border-2 border-dashed border-slate-300 mb-2" />
+                    <span className="text-xs font-medium">วางคำตอบ</span>
                 </div>
             )}
         </div>
     );
 }
 
+// ──────────────────────────────────────────────
+// 4. MAIN CONTAINER
+// ──────────────────────────────────────────────
 export default function DragDrop({
     dragItems,
     dropZones,
@@ -118,15 +192,16 @@ export default function DragDrop({
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8,
+                distance: 5, // Slightly less for faster response
             },
         })
     );
 
-    // Get which items are already placed
     const placedItemIds = new Set(Object.values(placements));
+    const activeItem = dragItems.find(item => item.id === activeId);
 
     const handleDragStart = (event: DragStartEvent) => {
+        if (disabled) return;
         setActiveId(event.active.id as string);
     };
 
@@ -139,47 +214,30 @@ export default function DragDrop({
         const dragItemId = active.id as string;
         const dropZoneId = over.id as string;
 
-        // Check if dropping on a valid zone
+        // Valid drop
         if (dropZones.some(z => z.id === dropZoneId)) {
-            // Remove from any previous zone
             const newPlacements = { ...placements };
+
+            // If item already placed elsewhere, remove it
             Object.keys(newPlacements).forEach(key => {
                 if (newPlacements[key] === dragItemId) {
                     delete newPlacements[key];
                 }
             });
 
-            // Place in new zone
+            // If zone already has item, can handle swap logic here if desired
+            // For now, simple replace
             newPlacements[dropZoneId] = dragItemId;
             onChange(newPlacements);
         }
     };
 
     const handleRemove = (dropZoneId: string) => {
+        if (disabled) return;
         const newPlacements = { ...placements };
         delete newPlacements[dropZoneId];
         onChange(newPlacements);
     };
-
-    const activeItem = dragItems.find(item => item.id === activeId);
-
-    if (disabled) {
-        return (
-            <div className="space-y-4 opacity-70">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {dropZones.map(zone => {
-                        const placedItem = dragItems.find(item => placements[zone.id] === item.id);
-                        return (
-                            <div key={zone.id} className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
-                                <p className="text-sm text-slate-400 mb-2">{zone.label}</p>
-                                <p className="text-white">{placedItem?.text || '-'}</p>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        );
-    }
 
     return (
         <DndContext
@@ -188,49 +246,53 @@ export default function DragDrop({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="space-y-6">
-                {/* Available Items */}
-                <div>
-                    <p className="text-sm text-slate-400 mb-3">ลากคำตอบไปวางในช่องที่ถูกต้อง:</p>
-                    <div className="flex flex-wrap gap-3">
-                        {dragItems.map(item => (
-                            <DraggableItem
-                                key={item.id}
-                                item={item}
-                                isPlaced={placedItemIds.has(item.id)}
-                            />
-                        ))}
+            <div className="space-y-8 select-none">
+                {/* 1. Source / Bank Area */}
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-text-secondary">ตัวเลือกคำตอบ ({dragItems.length})</p>
+                    </div>
+
+                    <div className="p-6 rounded-2xl bg-slate-50/50 border border-slate-200 min-h-[180px]">
+                        <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                            {dragItems.map(item => (
+                                <DraggableItem
+                                    key={item.id}
+                                    item={item}
+                                    isPlaced={placedItemIds.has(item.id)}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* Drop Zones */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    {dropZones.map(zone => {
-                        const placedItem = dragItems.find(item => placements[zone.id] === item.id);
-                        return (
-                            <DroppableZone
-                                key={zone.id}
-                                zone={zone}
-                                placedItem={placedItem}
-                                onRemove={() => handleRemove(zone.id)}
-                            />
-                        );
-                    })}
-                </div>
-
-                {/* Progress */}
-                <div className="text-right text-sm text-slate-500">
-                    วางแล้ว {Object.keys(placements).length} / {dropZones.length} ช่อง
+                {/* 2. Target / Drop Zones */}
+                <div className="space-y-3">
+                    <p className="text-sm font-semibold text-text-secondary">พื้นที่ว่างสำหรับวางคำตอบ</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {dropZones.map(zone => {
+                            const placedItem = dragItems.find(item => placements[zone.id] === item.id);
+                            return (
+                                <DroppableZone
+                                    key={zone.id}
+                                    zone={zone}
+                                    placedItem={placedItem}
+                                    onRemove={() => handleRemove(zone.id)}
+                                    disabled={disabled}
+                                />
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
 
-            {/* Drag Overlay */}
-            <DragOverlay>
+            {/* Drag Overlay (Follows Cursor) */}
+            <DragOverlay dropAnimation={{
+                duration: 250,
+                easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+            }}>
                 {activeItem && (
-                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-xl shadow-purple-500/40 cursor-grabbing">
-                        <GripVertical className="w-5 h-5" />
-                        <span className="text-sm font-medium">{activeItem.text}</span>
-                    </div>
+                    <DragItemCard item={activeItem} isOverlay />
                 )}
             </DragOverlay>
         </DndContext>

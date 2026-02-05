@@ -18,7 +18,6 @@ export default function StudentLayout({
 
     const navItems = [
         { name: "แดชบอร์ด", href: "/student/dashboard", icon: LayoutDashboard },
-        { name: "แบบทดสอบ", href: "/student/exams", icon: BookOpen },
         { name: "ประวัติการสอบ", href: "/student/history", icon: History },
     ];
 
