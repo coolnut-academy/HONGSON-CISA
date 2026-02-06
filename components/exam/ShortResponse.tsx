@@ -31,23 +31,29 @@ export default function ShortResponse({
                 disabled={disabled}
                 placeholder={placeholder}
                 rows={5}
-                className={`w-full p-4 rounded-xl bg-slate-800/80 border-2 transition-all resize-none text-white placeholder-slate-500 leading-relaxed ${isOverLimit
-                        ? 'border-red-500 focus:border-red-500'
-                        : 'border-slate-700 focus:border-indigo-500'
-                    } focus:ring-4 focus:ring-indigo-500/20 outline-none ${disabled ? 'opacity-60 cursor-not-allowed' : ''
-                    }`}
+                className={`
+                    w-full p-4 rounded-xl bg-white border-2 transition-all resize-none 
+                    text-slate-900 placeholder-slate-400 leading-relaxed
+                    focus:ring-4 focus:ring-indigo-500/10 outline-none
+                    ${isOverLimit
+                        ? 'border-red-400 focus:border-red-500'
+                        : 'border-slate-200 focus:border-indigo-500 hover:border-slate-300'
+                    }
+                    ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''}
+                `}
             />
 
             <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">
                     ตอบสั้นๆ 3-5 บรรทัด
                 </span>
-                <span className={`font-medium ${isOverLimit
-                        ? 'text-red-400'
+                <span className={`font-medium ${
+                    isOverLimit
+                        ? 'text-red-500'
                         : isNearLimit
-                            ? 'text-amber-400'
+                            ? 'text-amber-600'
                             : 'text-slate-500'
-                    }`}>
+                }`}>
                     {characterCount} / {maxCharacters}
                 </span>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Clock, AlertTriangle, Pause, Play } from "lucide-react";
+import { Clock, AlertTriangle, Pause } from "lucide-react";
 
 interface ExamTimerProps {
     timeLimitMinutes: number;
@@ -9,6 +9,7 @@ interface ExamTimerProps {
     onTimeUp: () => void;
     onAutoSave?: () => void;
     paused?: boolean;
+    isLightMode?: boolean;
 }
 
 export default function ExamTimer({
@@ -16,7 +17,8 @@ export default function ExamTimer({
     startTime,
     onTimeUp,
     onAutoSave,
-    paused = false
+    paused = false,
+    isLightMode = false
 }: ExamTimerProps) {
     const [timeRemaining, setTimeRemaining] = useState<number>(timeLimitMinutes * 60);
     const [hasWarned10, setHasWarned10] = useState(false);
@@ -88,17 +90,28 @@ export default function ExamTimer({
 
     // Calculate color based on time remaining
     const getTimerColor = () => {
-        if (timeRemaining <= 60) return 'text-red-400 animate-pulse';
-        if (timeRemaining <= 300) return 'text-red-400';
-        if (timeRemaining <= 600) return 'text-amber-400';
-        return 'text-emerald-400';
+        if (timeRemaining <= 60) return isLightMode ? 'text-red-600 animate-pulse' : 'text-red-400 animate-pulse';
+        if (timeRemaining <= 300) return isLightMode ? 'text-red-600' : 'text-red-400';
+        if (timeRemaining <= 600) return isLightMode ? 'text-amber-600' : 'text-amber-400';
+        return isLightMode ? 'text-emerald-600' : 'text-emerald-400';
     };
 
     const getTimerBg = () => {
-        if (timeRemaining <= 60) return 'bg-red-500/20 border-red-500/50';
-        if (timeRemaining <= 300) return 'bg-red-500/10 border-red-500/30';
-        if (timeRemaining <= 600) return 'bg-amber-500/10 border-amber-500/30';
-        return 'bg-slate-800/80 border-slate-700/50';
+        if (isLightMode) {
+            if (timeRemaining <= 60) return 'bg-red-50 border-red-200';
+            if (timeRemaining <= 300) return 'bg-red-50 border-red-200';
+            if (timeRemaining <= 600) return 'bg-amber-50 border-amber-200';
+            return 'bg-slate-100 border-slate-200';
+        } else {
+            if (timeRemaining <= 60) return 'bg-red-500/20 border-red-500/50';
+            if (timeRemaining <= 300) return 'bg-red-500/10 border-red-500/30';
+            if (timeRemaining <= 600) return 'bg-amber-500/10 border-amber-500/30';
+            return 'bg-slate-800/80 border-slate-700/50';
+        }
+    };
+    
+    const getProgressBg = () => {
+        return isLightMode ? 'text-slate-300' : 'text-slate-700';
     };
 
     const progressPercent = (timeRemaining / (timeLimitMinutes * 60)) * 100;
@@ -117,7 +130,7 @@ export default function ExamTimer({
                 <span className={`font-mono text-lg font-bold ${getTimerColor()}`}>
                     {formatTime(timeRemaining)}
                 </span>
-                <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+                <span className={`text-[10px] uppercase tracking-wider ${isLightMode ? 'text-slate-500' : 'text-slate-500'}`}>
                     เหลือ
                 </span>
             </div>
@@ -132,7 +145,7 @@ export default function ExamTimer({
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="3"
-                        className="text-slate-700"
+                        className={getProgressBg()}
                     />
                     <circle
                         cx="20"
@@ -150,7 +163,7 @@ export default function ExamTimer({
 
             {/* Paused indicator */}
             {paused && (
-                <div className="flex items-center gap-1 text-amber-400">
+                <div className={`flex items-center gap-1 ${isLightMode ? 'text-amber-600' : 'text-amber-400'}`}>
                     <Pause className="w-4 h-4" />
                     <span className="text-xs">หยุดชั่วคราว</span>
                 </div>

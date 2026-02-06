@@ -10,6 +10,7 @@ interface MultipleSelectProps {
     disabled?: boolean;
     minSelect?: number;
     maxSelect?: number;
+    fontSize?: number;
 }
 
 export default function MultipleSelect({
@@ -18,7 +19,8 @@ export default function MultipleSelect({
     onChange,
     disabled = false,
     minSelect,
-    maxSelect
+    maxSelect,
+    fontSize = 16
 }: MultipleSelectProps) {
     const handleToggle = (optionId: string) => {
         if (disabled) return;
@@ -58,32 +60,39 @@ export default function MultipleSelect({
                         type="button"
                         onClick={() => handleToggle(option.id)}
                         disabled={disabled}
-                        className={`w-full flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left group ${isSelected
-                                ? 'bg-emerald-500/20 border-emerald-500 shadow-lg shadow-emerald-500/20'
-                                : 'bg-slate-800/50 border-slate-700 hover:border-slate-600 hover:bg-slate-800'
-                            } ${disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                        className={`
+                            w-full flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-left group
+                            ${isSelected
+                                ? 'bg-emerald-50 border-emerald-500 shadow-md'
+                                : 'bg-white border-slate-200 hover:border-emerald-300 hover:bg-slate-50'
+                            }
+                            ${disabled ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}
+                        `}
+                        style={{ fontSize: `${fontSize}px` }}
                     >
                         {/* Checkbox */}
                         <div className="flex-shrink-0 pt-0.5">
                             {isSelected ? (
-                                <CheckSquare className="w-6 h-6 text-emerald-400" />
+                                <CheckSquare className="w-6 h-6 text-emerald-600" />
                             ) : (
-                                <Square className="w-6 h-6 text-slate-600 group-hover:text-slate-500" />
+                                <Square className="w-6 h-6 text-slate-400 group-hover:text-slate-500" />
                             )}
                         </div>
 
                         {/* Option Letter */}
-                        <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all ${isSelected
-                                ? 'bg-emerald-500/30 text-emerald-400'
-                                : 'bg-slate-700/50 text-slate-500'
-                            }`}>
+                        <div className={`
+                            flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm transition-all
+                            ${isSelected
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'bg-slate-100 text-slate-500'
+                            }
+                        `}>
                             {letter}
                         </div>
 
                         {/* Option Text */}
                         <div className="flex-1">
-                            <p className={`text-base leading-relaxed ${isSelected ? 'text-white' : 'text-slate-300'
-                                }`}>
+                            <p className={`leading-relaxed ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>
                                 {option.text}
                             </p>
                         </div>

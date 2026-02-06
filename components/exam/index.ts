@@ -8,3 +8,4 @@ export { default as ShortResponse } from './ShortResponse';
 export { default as ExtendedResponse } from './ExtendedResponse';
 export { default as ExamTimer } from './ExamTimer';
 export { default as StimulusRenderer } from './StimulusRenderer';
+export { default as ProfessionalExamLayout } from './ProfessionalExamLayout';

@@ -24,8 +24,8 @@ export default function ExtendedResponse({
     return (
         <div className="space-y-3">
             {/* Guidelines */}
-            <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
-                <p className="text-sm text-slate-400">
+            <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100">
+                <p className="text-sm text-indigo-800">
                     💡 คำแนะนำ: อธิบายอย่างละเอียด โดยอ้างอิงหลักฐาน/ข้อมูล รวมถึงเหตุผลทางวิทยาศาสตร์
                 </p>
             </div>
@@ -36,19 +36,25 @@ export default function ExtendedResponse({
                 disabled={disabled}
                 placeholder={placeholder}
                 rows={10}
-                className={`w-full p-5 rounded-xl bg-slate-800/80 border-2 transition-all resize-y text-white placeholder-slate-500 leading-relaxed ${hasMinimum
-                        ? 'border-emerald-500/50 focus:border-emerald-500'
-                        : 'border-slate-700 focus:border-indigo-500'
-                    } focus:ring-4 focus:ring-indigo-500/20 outline-none ${disabled ? 'opacity-60 cursor-not-allowed' : ''
-                    }`}
+                className={`
+                    w-full p-5 rounded-xl bg-white border-2 transition-all resize-y 
+                    text-slate-900 placeholder-slate-400 leading-relaxed
+                    focus:ring-4 focus:ring-indigo-500/10 outline-none
+                    ${hasMinimum
+                        ? 'border-emerald-400 focus:border-emerald-500 hover:border-emerald-400'
+                        : 'border-slate-200 focus:border-indigo-500 hover:border-slate-300'
+                    }
+                    ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''}
+                `}
             />
 
             {/* Progress Bar */}
             <div className="space-y-2">
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
                     <div
-                        className={`h-full transition-all duration-300 ${hasMinimum ? 'bg-emerald-500' : 'bg-indigo-500'
-                            }`}
+                        className={`h-full transition-all duration-300 ${
+                            hasMinimum ? 'bg-emerald-500' : 'bg-indigo-500'
+                        }`}
                         style={{ width: `${progress}%` }}
                     />
                 </div>
@@ -57,8 +63,8 @@ export default function ExtendedResponse({
                     <div className="flex items-center gap-2">
                         {hasMinimum ? (
                             <>
-                                <CheckCircle className="w-4 h-4 text-emerald-400" />
-                                <span className="text-sm text-emerald-400">ตอบครบถ้วน</span>
+                                <CheckCircle className="w-4 h-4 text-emerald-600" />
+                                <span className="text-sm text-emerald-600 font-medium">ตอบครบถ้วน</span>
                             </>
                         ) : (
                             <span className="text-sm text-slate-500">
@@ -66,8 +72,9 @@ export default function ExtendedResponse({
                             </span>
                         )}
                     </div>
-                    <span className={`text-sm font-medium ${hasMinimum ? 'text-emerald-400' : 'text-slate-400'
-                        }`}>
+                    <span className={`text-sm font-medium ${
+                        hasMinimum ? 'text-emerald-600' : 'text-slate-500'
+                    }`}>
                         {characterCount} ตัวอักษร
                     </span>
                 </div>

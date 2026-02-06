@@ -11,8 +11,6 @@ import {
     Tooltip,
     Legend,
     ResponsiveContainer,
-    ScatterChart,
-    Scatter,
 } from "recharts";
 import Image from "next/image";
 import MathRenderer from "@/components/ui/MathRenderer";
@@ -22,6 +20,7 @@ interface StimulusRendererProps {
     randomSeed?: number;
     generatedValues?: Record<string, number>;
     onValuesGenerated?: (values: Record<string, number>) => void;
+    isLightMode?: boolean;
 }
 
 // Seeded random number generator
@@ -53,7 +52,15 @@ function evaluateFormula(formula: string, variables: Record<string, number>, x: 
 }
 
 // Table Component
-function TableStimulus({ content, caption }: { content: string; caption?: string }) {
+function TableStimulus({ 
+    content, 
+    caption,
+    isLightMode = false 
+}: { 
+    content: string; 
+    caption?: string;
+    isLightMode?: boolean;
+}) {
     const tableData = useMemo(() => {
         try {
             return JSON.parse(content);
@@ -70,7 +77,11 @@ function TableStimulus({ content, caption }: { content: string; caption?: string
                         {tableData.headers?.map((header: string, i: number) => (
                             <th
                                 key={i}
-                                className="px-4 py-3 text-left text-sm font-semibold text-white bg-slate-700/80 border border-slate-600"
+                                className={`px-4 py-3 text-left text-sm font-semibold border ${
+                                    isLightMode 
+                                        ? 'text-slate-800 bg-slate-100 border-slate-200' 
+                                        : 'text-white bg-slate-700/80 border-slate-600'
+                                }`}
                             >
                                 {header}
                             </th>
@@ -79,11 +90,15 @@ function TableStimulus({ content, caption }: { content: string; caption?: string
                 </thead>
                 <tbody>
                     {tableData.rows?.map((row: string[], rowIndex: number) => (
-                        <tr key={rowIndex} className="hover:bg-slate-700/30">
+                        <tr key={rowIndex} className={isLightMode ? 'hover:bg-slate-50' : 'hover:bg-slate-700/30'}>
                             {row.map((cell: string, cellIndex: number) => (
                                 <td
                                     key={cellIndex}
-                                    className="px-4 py-3 text-sm text-slate-300 border border-slate-700/50"
+                                    className={`px-4 py-3 text-sm border ${
+                                        isLightMode 
+                                            ? 'text-slate-700 border-slate-200' 
+                                            : 'text-slate-300 border-slate-700/50'
+                                    }`}
                                 >
                                     {cell}
                                 </td>
@@ -93,7 +108,9 @@ function TableStimulus({ content, caption }: { content: string; caption?: string
                 </tbody>
             </table>
             {caption && (
-                <p className="text-xs text-slate-500 mt-2 italic">{caption}</p>
+                <p className={`text-xs mt-2 italic ${isLightMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                    {caption}
+                </p>
             )}
         </div>
     );
@@ -105,13 +122,15 @@ function GraphStimulus({
     caption,
     randomSeed,
     generatedValues,
-    onValuesGenerated
+    onValuesGenerated,
+    isLightMode = false
 }: {
     content: string;
     caption?: string;
     randomSeed?: number;
     generatedValues?: Record<string, number>;
     onValuesGenerated?: (values: Record<string, number>) => void;
+    isLightMode?: boolean;
 }) {
     const graphData = useMemo(() => {
         try {
@@ -172,7 +191,7 @@ function GraphStimulus({
     }, [content, randomSeed, generatedValues, onValuesGenerated]);
 
     if (!graphData) {
-        return <p className="text-red-400">Error loading graph</p>;
+        return <p className="text-red-500">Error loading graph</p>;
     }
 
     // Combine all data points for the chart
@@ -184,26 +203,41 @@ function GraphStimulus({
         return dataPoint;
     }) || [];
 
+    const axisColor = isLightMode ? '#64748b' : '#94a3b8';
+    const gridColor = isLightMode ? '#e2e8f0' : '#334155';
+    const tooltipBg = isLightMode ? '#ffffff' : '#1e293b';
+    const tooltipBorder = isLightMode ? '#e2e8f0' : '#334155';
+    const tooltipColor = isLightMode ? '#1e293b' : '#f1f5f9';
+
     return (
         <div className="space-y-3">
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                     <XAxis
                         dataKey="x"
-                        stroke="#94a3b8"
-                        label={{ value: `${graphData.xAxis.label}${graphData.xAxis.unit ? ` (${graphData.xAxis.unit})` : ''}`, position: 'bottom', fill: '#94a3b8' }}
+                        stroke={axisColor}
+                        label={{ 
+                            value: `${graphData.xAxis.label}${graphData.xAxis.unit ? ` (${graphData.xAxis.unit})` : ''}`, 
+                            position: 'bottom', 
+                            fill: axisColor 
+                        }}
                     />
                     <YAxis
-                        stroke="#94a3b8"
-                        label={{ value: `${graphData.yAxis.label}${graphData.yAxis.unit ? ` (${graphData.yAxis.unit})` : ''}`, angle: -90, position: 'insideLeft', fill: '#94a3b8' }}
+                        stroke={axisColor}
+                        label={{ 
+                            value: `${graphData.yAxis.label}${graphData.yAxis.unit ? ` (${graphData.yAxis.unit})` : ''}`, 
+                            angle: -90, 
+                            position: 'insideLeft', 
+                            fill: axisColor 
+                        }}
                     />
                     <Tooltip
                         contentStyle={{
-                            backgroundColor: '#1e293b',
-                            border: '1px solid #334155',
+                            backgroundColor: tooltipBg,
+                            border: `1px solid ${tooltipBorder}`,
                             borderRadius: '8px',
-                            color: '#f1f5f9'
+                            color: tooltipColor
                         }}
                     />
                     <Legend />
@@ -225,7 +259,14 @@ function GraphStimulus({
             {Object.keys(graphData.variables || {}).length > 0 && (
                 <div className="flex flex-wrap gap-2">
                     {Object.entries(graphData.variables).map(([name, value]) => (
-                        <span key={name} className="px-2 py-1 rounded bg-slate-700/50 text-xs text-slate-400">
+                        <span 
+                            key={name} 
+                            className={`px-2 py-1 rounded text-xs ${
+                                isLightMode 
+                                    ? 'bg-slate-100 text-slate-600' 
+                                    : 'bg-slate-700/50 text-slate-400'
+                            }`}
+                        >
                             {name} = {value as number}
                         </span>
                     ))}
@@ -233,7 +274,9 @@ function GraphStimulus({
             )}
 
             {caption && (
-                <p className="text-xs text-slate-500 italic">{caption}</p>
+                <p className={`text-xs italic ${isLightMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                    {caption}
+                </p>
             )}
         </div>
     );
@@ -243,28 +286,38 @@ export default function StimulusRenderer({
     stimuli,
     randomSeed,
     generatedValues,
-    onValuesGenerated
+    onValuesGenerated,
+    isLightMode = false
 }: StimulusRendererProps) {
     if (!stimuli || stimuli.length === 0) return null;
 
+    const cardClass = isLightMode 
+        ? 'bg-white border-slate-200' 
+        : 'bg-slate-800/50 border-slate-700/50';
+    
+    const textClass = isLightMode ? 'text-slate-700' : 'text-slate-300';
+    const captionClass = isLightMode ? 'text-slate-500' : 'text-slate-500';
+    const iframeBg = isLightMode ? 'bg-slate-100' : 'bg-slate-900';
+    const iframeBorder = isLightMode ? 'border-slate-200' : 'border-slate-700';
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {stimuli.map((stimulus, index) => (
-                <div key={index} className="rounded-xl bg-slate-800/50 border border-slate-700/50 overflow-hidden">
+                <div key={index} className={`rounded-xl border overflow-hidden ${cardClass}`}>
                     {stimulus.type === 'text' && (
                         <div className="p-4">
-                            <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">
+                            <p className={`leading-relaxed whitespace-pre-wrap ${textClass}`}>
                                 <MathRenderer text={stimulus.content} />
                             </p>
                             {stimulus.caption && (
-                                <p className="text-xs text-slate-500 mt-2 italic">{stimulus.caption}</p>
+                                <p className={`text-xs mt-2 italic ${captionClass}`}>{stimulus.caption}</p>
                             )}
                         </div>
                     )}
 
                     {stimulus.type === 'image' && (
                         <div className="p-4">
-                            <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-slate-900">
+                            <div className={`relative w-full aspect-video rounded-lg overflow-hidden ${iframeBg}`}>
                                 <Image
                                     src={stimulus.content}
                                     alt={stimulus.caption || 'Stimulus image'}
@@ -273,14 +326,18 @@ export default function StimulusRenderer({
                                 />
                             </div>
                             {stimulus.caption && (
-                                <p className="text-xs text-slate-500 mt-2 italic text-center">{stimulus.caption}</p>
+                                <p className={`text-xs mt-2 italic text-center ${captionClass}`}>{stimulus.caption}</p>
                             )}
                         </div>
                     )}
 
                     {stimulus.type === 'table' && (
                         <div className="p-4">
-                            <TableStimulus content={stimulus.content} caption={stimulus.caption} />
+                            <TableStimulus 
+                                content={stimulus.content} 
+                                caption={stimulus.caption} 
+                                isLightMode={isLightMode}
+                            />
                         </div>
                     )}
 
@@ -292,13 +349,14 @@ export default function StimulusRenderer({
                                 randomSeed={randomSeed}
                                 generatedValues={generatedValues}
                                 onValuesGenerated={onValuesGenerated}
+                                isLightMode={isLightMode}
                             />
                         </div>
                     )}
 
                     {stimulus.type === 'simulation' && stimulus.content && (
                         <div className="p-4 space-y-3">
-                            <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-700">
+                            <div className={`relative w-full aspect-video rounded-lg overflow-hidden ${iframeBg} border ${iframeBorder}`}>
                                 <iframe
                                     src={stimulus.content}
                                     className="w-full h-full"
@@ -308,14 +366,14 @@ export default function StimulusRenderer({
                                 />
                             </div>
                             {stimulus.caption && (
-                                <p className="text-xs text-slate-500 italic text-center">{stimulus.caption}</p>
+                                <p className={`text-xs italic text-center ${captionClass}`}>{stimulus.caption}</p>
                             )}
                         </div>
                     )}
 
                     {stimulus.type === 'iframe' && stimulus.content && (
                         <div className="p-4 space-y-3">
-                            <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-slate-900 border border-slate-700">
+                            <div className={`relative w-full aspect-video rounded-lg overflow-hidden ${iframeBg} border ${iframeBorder}`}>
                                 <iframe
                                     src={stimulus.content}
                                     className="w-full h-full"
@@ -325,7 +383,7 @@ export default function StimulusRenderer({
                                 />
                             </div>
                             {stimulus.caption && (
-                                <p className="text-xs text-slate-500 italic text-center">{stimulus.caption}</p>
+                                <p className={`text-xs italic text-center ${captionClass}`}>{stimulus.caption}</p>
                             )}
                         </div>
                     )}

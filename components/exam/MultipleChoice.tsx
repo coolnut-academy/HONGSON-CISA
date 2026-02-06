@@ -2,42 +2,27 @@
 
 import { useState } from "react";
 import { ChoiceOption } from "@/types";
-import { Check, Image as ImageIcon } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface MultipleChoiceProps {
     options: ChoiceOption[];
     selectedOptionId?: string;
     onChange: (optionId: string) => void;
     disabled?: boolean;
+    fontSize?: number;
 }
 
 export default function MultipleChoice({
     options,
     selectedOptionId,
     onChange,
-    disabled = false
+    disabled = false,
+    fontSize = 16
 }: MultipleChoiceProps) {
     const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
     const handleImageError = (optionId: string) => {
         setImageErrors(prev => new Set(prev).add(optionId));
-    };
-
-    const getOptionStyle = (optionId: string, hasImage: boolean) => {
-        const isSelected = selectedOptionId === optionId;
-        
-        if (isSelected) {
-            return {
-                borderColor: 'var(--exam-primary)',
-                backgroundColor: 'rgba(37, 99, 235, 0.05)',
-                boxShadow: '0 0 0 1px var(--exam-primary)',
-            };
-        }
-        
-        return {
-            borderColor: 'var(--exam-secondary)',
-            backgroundColor: 'var(--exam-surface)',
-        };
     };
 
     return (
@@ -56,10 +41,13 @@ export default function MultipleChoice({
                         className={`
                             w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left
                             hover:shadow-md
-                            ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-[var(--exam-primary)]'}
-                            ${isSelected ? 'ring-1 ring-[var(--exam-primary)]' : ''}
+                            ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                            ${isSelected 
+                                ? 'bg-indigo-50 border-indigo-500 shadow-md ring-1 ring-indigo-500' 
+                                : 'bg-white border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                            }
                         `}
-                        style={getOptionStyle(option.id, hasImage)}
+                        style={{ fontSize: `${fontSize}px` }}
                     >
                         {/* Selection Circle */}
                         <div
@@ -67,18 +55,15 @@ export default function MultipleChoice({
                                 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center
                                 border-2 transition-all duration-200
                                 ${isSelected 
-                                    ? 'border-[var(--exam-primary)] bg-[var(--exam-primary)] text-white' 
-                                    : 'border-[var(--exam-secondary)]'
+                                    ? 'border-indigo-600 bg-indigo-600 text-white' 
+                                    : 'border-slate-300 bg-white'
                                 }
                             `}
                         >
                             {isSelected ? (
                                 <Check className="w-5 h-5" />
                             ) : (
-                                <span 
-                                    className="text-sm font-semibold"
-                                    style={{ color: 'var(--exam-text-muted)' }}
-                                >
+                                <span className="text-sm font-semibold text-slate-500">
                                     {letter}
                                 </span>
                             )}
@@ -87,7 +72,7 @@ export default function MultipleChoice({
                         {/* Content - Image or Text */}
                         {hasImage ? (
                             <div className="flex items-center gap-4 flex-1">
-                                <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                <div className="w-20 h-20 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center flex-shrink-0 border border-slate-200">
                                     <img
                                         src={option.imageUrl}
                                         alt={option.text}
@@ -95,21 +80,12 @@ export default function MultipleChoice({
                                         onError={() => handleImageError(option.id)}
                                     />
                                 </div>
-                                <span 
-                                    className="flex-1"
-                                    style={{ color: 'var(--exam-text)' }}
-                                >
+                                <span className="flex-1 text-slate-800">
                                     {option.text}
                                 </span>
                             </div>
                         ) : (
-                            <span 
-                                className="flex-1 text-base"
-                                style={{ 
-                                    color: 'var(--exam-text)',
-                                    fontSize: 'var(--exam-font-choice)'
-                                }}
-                            >
+                            <span className="flex-1 text-slate-800 leading-relaxed">
                                 {option.text}
                             </span>
                         )}
