@@ -27,6 +27,13 @@ service cloud.firestore {
              getUserData().role == 'super_admin';
     }
     
+    // Check if query filters by studentId (for list operations)
+    function isQueryingOwnSubmissions() {
+      return request.query.filters[0].field == 'studentId' &&
+             request.query.filters[0].op == '==' &&
+             request.query.filters[0].value == request.auth.uid;
+    }
+    
     // Users collection
     match /users/{userId} {
       // Anyone authenticated can read their own document
@@ -65,15 +72,26 @@ service cloud.firestore {
     
     // Submissions collection
     match /submissions/{submissionId} {
-      // Allow 'get' for ANY authenticated user if the doc is missing (returns exists: false)
-      // or if it's their own document.
+      // GET: Allow if own document or admin
+      // resource == null allows checking exists() without permission error
       allow get: if isAuthenticated() && (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
       
-      // 'list' still restricted to own docs or admins
-      allow list: if isAdmin() || (isAuthenticated() && resource.data.studentId == request.auth.uid);
+      // LIST: 
+      // - Admins can list all
+      // - Students can only list if they filter by their own studentId
+      allow list: if isAdmin() || 
+                    (isAuthenticated() && 
+                     request.query.filters[0].field == 'studentId' &&
+                     request.query.filters[0].op == '==' &&
+                     request.query.filters[0].value == request.auth.uid);
       
-      // Authenticated users can create submissions
-      allow create: if isAuthenticated();
+      // DISABLED: Client-side creation - must use submitExam Cloud Function
+      // This prevents:
+      // - Forged scores
+      // - Impersonation (changing studentId)
+      // - Invalid answer formats
+      // - Fake time spent
+      allow create: if false;
             
       // Only admins can update/delete
       allow update, delete: if isAdmin();
@@ -81,14 +99,15 @@ service cloud.firestore {
 
     // Submission Archives collection (for history)
     match /submission_archives/{archiveId} {
-      // Allow 'get' similarly to submissions
+      // GET: Allow if own document or admin
       allow get: if isAuthenticated() && (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
       
-      // Admins can manage everything
-      allow list, create, update, delete: if isAdmin();
+      // LIST: Only admins can list
+      // Students should not need to list archives (they see active submissions only)
+      allow list: if isAdmin();
       
-      // Students can list their own archives
-      allow list: if isAuthenticated() && resource.data.studentId == request.auth.uid;
+      // Admins can create/update/delete
+      allow create, update, delete: if isAdmin();
     }
 
     

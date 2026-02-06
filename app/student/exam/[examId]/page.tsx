@@ -5,8 +5,10 @@ import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useRoleProtection } from "@/hooks/useRoleProtection";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { Exam, Submission, QuestionAnswer, ExamItem } from "@/types";
+import { doc, getDoc } from "firebase/firestore";
+import { httpsCallable } from "firebase/functions";
+import { Exam, QuestionAnswer, ExamItem } from "@/types";
+import { functions } from "@/lib/firebase";
 import {
     Loader2,
     Send,
@@ -297,40 +299,26 @@ export default function ExamPage() {
         setIsSubmitting(true);
 
         try {
-            const studentName = (user.firstName && user.lastName)
-                ? `${user.firstName} ${user.lastName}`
-                : (user.email?.split('@')[0] || "Unknown Student");
-
-            const initialItemScores: Record<string, number> = {};
-            exam.items.forEach(item => {
-                initialItemScores[item.id] = 0;
-            });
-
             // Calculate time spent
             const timeSpentSeconds = examStartTime
                 ? Math.floor((Date.now() - examStartTime.getTime()) / 1000)
                 : 0;
 
-            const submissionData: Submission = {
+            // Prepare submission data
+            const submitData = {
                 examId: exam.id!,
-                studentId: user.uid,
-                studentName: studentName,
-                classRoom: user.classRoom || "N/A",
-                competency: exam.competency,
                 answers: answers,
-                itemScores: initialItemScores,
-                status: 'pending',
-                score: null,
-                feedback: null,
-                submittedAt: serverTimestamp(),
-                startedAt: examStartTime,
-                timeSpentSeconds,
-                autoSubmitted: isAutoSubmit,
-                randomSeed,
-                generatedValues
+                timeSpentSeconds: timeSpentSeconds,
+                randomSeed: randomSeed,
+                generatedValues: generatedValues,
             };
 
-            await addDoc(collection(db, "submissions"), submissionData);
+            // Call Cloud Function for secure submission
+            const submitExam = httpsCallable(functions, 'submitExam');
+            const result = await submitExam(submitData);
+            const data = result.data as { success: boolean; submissionId: string; message: string };
+
+            console.log("[Exam Submission] Success:", data);
 
             // Clear auto-save
             localStorage.removeItem(`exam_autosave_${exam.id}_${user.uid}`);
@@ -346,9 +334,33 @@ export default function ExamPage() {
                 alert("ส่งคำตอบสำเร็จ! ระบบกำลังรอการประเมินจาก AI...");
             }
             router.push("/student/dashboard");
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error submitting answer:", err);
-            alert("เกิดข้อผิดพลาดในการส่งคำตอบ กรุณาลองใหม่อีกครั้ง");
+            
+            // Handle specific error codes from Cloud Function
+            const errorCode = err.code || 'unknown';
+            const errorMessage = err.message || 'Unknown error occurred';
+            
+            let userMessage = "เกิดข้อผิดพลาดในการส่งคำตอบ กรุณาลองใหม่อีกครั้ง";
+            
+            switch (errorCode) {
+                case 'functions/already-exists':
+                    userMessage = "คุณได้ส่งคำตอบชุดนี้ไปแล้ว ไม่สามารถส่งซ้ำได้";
+                    break;
+                case 'functions/failed-precondition':
+                    userMessage = "แบบทดสอบนี้ปิดรับคำตอบแล้ว หรือยังไม่เปิดให้ทำ";
+                    break;
+                case 'functions/permission-denied':
+                    userMessage = "คุณไม่มีสิทธิ์ส่งคำตอบชุดนี้";
+                    break;
+                case 'functions/unauthenticated':
+                    userMessage = "กรุณาเข้าสู่ระบบใหม่ เนื่องจากเซสชันหมดอายุ";
+                    break;
+                default:
+                    userMessage = `เกิดข้อผิดพลาด: ${errorMessage}`;
+            }
+            
+            alert(userMessage);
         } finally {
             setIsSubmitting(false);
         }

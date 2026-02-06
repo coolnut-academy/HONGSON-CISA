@@ -11,9 +11,325 @@ declare module "nodemailer";
 admin.initializeApp();
 const db = admin.firestore();
 
+// =============== VALIDATION HELPERS ===============
+
+/**
+ * Sanitize text input to prevent XSS and injection attacks
+ */
+function sanitizeText(text: string | undefined): string {
+    if (!text) return "";
+    // Remove HTML tags and limit length
+    return text
+        .replace(/<[^>]*>/g, "") // Strip HTML
+        .replace(/[<>\"']/g, "") // Remove dangerous characters
+        .substring(0, 10000); // Max 10k chars
+}
+
+/**
+ * Validate answer format based on question type
+ */
+function validateAnswer(answer: QuestionAnswer, item: ExamItem): { valid: boolean; error?: string; sanitized: QuestionAnswer } {
+    const sanitized: QuestionAnswer = { type: item.questionType };
+
+    switch (item.questionType) {
+        case "multiple_choice": {
+            if (!answer.selectedOptionId) {
+                return { valid: true, sanitized }; // Allow empty
+            }
+            const validOption = item.options?.some((o) => o.id === answer.selectedOptionId);
+            if (!validOption) {
+                return { valid: false, error: `Invalid option ID for item ${item.id}`, sanitized };
+            }
+            sanitized.selectedOptionId = answer.selectedOptionId;
+            return { valid: true, sanitized };
+        }
+
+        case "multiple_select":
+        case "checklist": {
+            if (!answer.selectedOptionIds || answer.selectedOptionIds.length === 0) {
+                return { valid: true, sanitized: { ...sanitized, selectedOptionIds: [] } };
+            }
+            const validIds = answer.selectedOptionIds.filter((id) =>
+                item.options?.some((o) => o.id === id)
+            );
+            sanitized.selectedOptionIds = validIds;
+            return { valid: true, sanitized };
+        }
+
+        case "drag_drop": {
+            if (!answer.dragDropPlacements || Object.keys(answer.dragDropPlacements).length === 0) {
+                return { valid: true, sanitized: { ...sanitized, dragDropPlacements: {} } };
+            }
+            const validZones = item.dropZones?.map((z) => z.id) || [];
+            const validItems = item.dragItems?.map((i) => i.id) || [];
+            const sanitizedPlacements: Record<string, string> = {};
+
+            for (const [zoneId, itemId] of Object.entries(answer.dragDropPlacements)) {
+                if (validZones.includes(zoneId) && validItems.includes(itemId)) {
+                    sanitizedPlacements[zoneId] = itemId;
+                }
+            }
+            sanitized.dragDropPlacements = sanitizedPlacements;
+            return { valid: true, sanitized };
+        }
+
+        case "matching": {
+            if (!answer.matchingPairs || Object.keys(answer.matchingPairs).length === 0) {
+                return { valid: true, sanitized: { ...sanitized, matchingPairs: {} } };
+            }
+            const validLeft = item.leftColumn?.map((l) => l.id) || [];
+            const validRight = item.rightColumn?.map((r) => r.id) || [];
+            const sanitizedPairs: Record<string, string> = {};
+
+            for (const [leftId, rightId] of Object.entries(answer.matchingPairs)) {
+                if (validLeft.includes(leftId) && validRight.includes(rightId)) {
+                    sanitizedPairs[leftId] = rightId;
+                }
+            }
+            sanitized.matchingPairs = sanitizedPairs;
+            return { valid: true, sanitized };
+        }
+
+        case "short_response": {
+            const text = sanitizeText(answer.textAnswer);
+            const maxChars = item.maxCharacters || 500;
+            if (text.length > maxChars) {
+                return { valid: false, error: `Answer exceeds max characters for item ${item.id}`, sanitized };
+            }
+            sanitized.textAnswer = text;
+            return { valid: true, sanitized };
+        }
+
+        case "extended_response": {
+            const text = sanitizeText(answer.textAnswer);
+            if (text.length > 10000) {
+                return { valid: false, error: `Answer too long for item ${item.id}`, sanitized };
+            }
+            sanitized.textAnswer = text;
+            return { valid: true, sanitized };
+        }
+
+        default:
+            return { valid: false, error: `Unknown question type: ${item.questionType}`, sanitized };
+    }
+}
+
+// =============== SUBMIT EXAM FUNCTION ===============
+
+export const submitExam = onCall<SubmitExamInput>({
+    timeoutSeconds: 60,
+    memory: "512MiB",
+}, async (request) => {
+    console.log("[submitExam] Called by:", request.auth?.uid);
+
+    // 1. AUTHENTICATION CHECK
+    if (!request.auth) {
+        console.warn("[submitExam] Unauthenticated attempt");
+        throw new HttpsError("unauthenticated", "User must be logged in to submit exam.");
+    }
+
+    const studentId = request.auth.uid;
+
+    // 2. FETCH USER DATA
+    let userData: any;
+    try {
+        const userDoc = await db.collection("users").doc(studentId).get();
+        if (!userDoc.exists) {
+            throw new HttpsError("not-found", "User profile not found.");
+        }
+        userData = userDoc.data();
+
+        // Verify role is student
+        if (userData?.role !== "student") {
+            throw new HttpsError("permission-denied", "Only students can submit exams.");
+        }
+    } catch (error: any) {
+        console.error("[submitExam] Error fetching user:", error);
+        throw new HttpsError("internal", "Failed to verify user profile.");
+    }
+
+    // 3. EXTRACT AND VALIDATE INPUT
+    const { examId, answers, timeSpentSeconds, randomSeed, generatedValues } = request.data;
+
+    if (!examId || typeof examId !== "string") {
+        throw new HttpsError("invalid-argument", "Exam ID is required.");
+    }
+
+    if (!answers || typeof answers !== "object") {
+        throw new HttpsError("invalid-argument", "Answers object is required.");
+    }
+
+    // 4. FETCH AND VALIDATE EXAM
+    let examData: ExamData;
+    try {
+        const examDoc = await db.collection("exams").doc(examId).get();
+        if (!examDoc.exists) {
+            throw new HttpsError("not-found", "Exam not found.");
+        }
+        examData = examDoc.data() as ExamData;
+
+        if (!examData.isActive) {
+            throw new HttpsError("failed-precondition", "This exam is not currently active.");
+        }
+
+        if (!examData.items || examData.items.length === 0) {
+            throw new HttpsError("failed-precondition", "Invalid exam structure.");
+        }
+    } catch (error: any) {
+        if (error instanceof HttpsError) throw error;
+        console.error("[submitExam] Error fetching exam:", error);
+        throw new HttpsError("internal", "Failed to load exam data.");
+    }
+
+    // 5. CHECK FOR DUPLICATE SUBMISSION
+    try {
+        const existingSubmission = await db
+            .collection("submissions")
+            .where("studentId", "==", studentId)
+            .where("examId", "==", examId)
+            .limit(1)
+            .get();
+
+        if (!existingSubmission.empty) {
+            throw new HttpsError("already-exists", "You have already submitted this exam.");
+        }
+    } catch (error: any) {
+        if (error instanceof HttpsError) throw error;
+        console.error("[submitExam] Error checking duplicates:", error);
+        throw new HttpsError("internal", "Failed to verify submission status.");
+    }
+
+    // 6. VALIDATE AND SANITIZE ANSWERS
+    const validatedAnswers: Record<string, QuestionAnswer> = {};
+    const itemScores: Record<string, number> = {};
+
+    for (const item of examData.items) {
+        // Initialize with zero score
+        itemScores[item.id] = 0;
+
+        // Get submitted answer for this item (may be undefined)
+        const submittedAnswer = answers[item.id];
+
+        if (!submittedAnswer) {
+            // No answer for this item - that's okay, treat as empty
+            validatedAnswers[item.id] = { type: item.questionType };
+            continue;
+        }
+
+        // Validate the answer format matches question type
+        if (submittedAnswer.type !== item.questionType) {
+            console.warn(`[submitExam] Type mismatch for item ${item.id}: expected ${item.questionType}, got ${submittedAnswer.type}`);
+            // Force correct type
+            submittedAnswer.type = item.questionType;
+        }
+
+        // Validate and sanitize
+        const validation = validateAnswer(submittedAnswer, item);
+        if (!validation.valid) {
+            console.warn(`[submitExam] Validation failed:`, validation.error);
+            // Use empty answer as fallback instead of rejecting
+            validatedAnswers[item.id] = { type: item.questionType };
+        } else {
+            validatedAnswers[item.id] = validation.sanitized;
+        }
+    }
+
+    // 7. VALIDATE AND CLAMP TIME SPENT
+    let validatedTimeSpent = 0;
+    if (typeof timeSpentSeconds === "number") {
+        const maxTime = examData.timeLimit ? examData.timeLimit * 60 : 7200; // Default max 2 hours
+        validatedTimeSpent = Math.max(0, Math.min(Math.floor(timeSpentSeconds), maxTime));
+    }
+
+    // 8. CONSTRUCT SUBMISSION DOCUMENT
+    const studentName = userData.firstName && userData.lastName
+        ? `${userData.firstName} ${userData.lastName}`
+        : userData.studentId || studentId;
+
+    const submissionData = {
+        examId: examId,
+        studentId: studentId,
+        studentName: studentName,
+        classRoom: userData.classRoom || "N/A",
+        competency: examData.competency,
+        answers: validatedAnswers,
+        itemScores: itemScores,
+        status: "pending",
+        score: null,
+        feedback: null,
+        submittedAt: admin.firestore.FieldValue.serverTimestamp(),
+        startedAt: validatedTimeSpent > 0
+            ? new Date(Date.now() - validatedTimeSpent * 1000)
+            : admin.firestore.FieldValue.serverTimestamp(),
+        timeSpentSeconds: validatedTimeSpent,
+        autoSubmitted: false,
+        randomSeed: randomSeed || Math.floor(Math.random() * 1000000),
+        generatedValues: generatedValues || {},
+        // Metadata for auditing
+        submittedByIp: request.rawRequest.ip || "unknown",
+        userAgent: request.rawRequest.headers["user-agent"] || "unknown",
+    };
+
+    // 9. SAVE TO FIRESTORE
+    try {
+        const submissionRef = await db.collection("submissions").add(submissionData);
+        console.log(`[submitExam] Submission created: ${submissionRef.id}`);
+
+        return {
+            success: true,
+            submissionId: submissionRef.id,
+            message: "Exam submitted successfully. Your answers are being processed by AI.",
+        };
+    } catch (error: any) {
+        console.error("[submitExam] Error saving submission:", error);
+        throw new HttpsError("internal", "Failed to save submission. Please try again.");
+    }
+});
+
 interface GradeExamInput {
     limit?: number;
     competency?: string;
+}
+
+// =============== SUBMISSION VALIDATION TYPES ===============
+
+interface SubmitExamInput {
+    examId: string;
+    answers: Record<string, QuestionAnswer>;
+    timeSpentSeconds?: number;
+    randomSeed?: number;
+    generatedValues?: Record<string, number>;
+}
+
+interface QuestionAnswer {
+    type: string;
+    textAnswer?: string;
+    selectedOptionId?: string;
+    selectedOptionIds?: string[];
+    dragDropPlacements?: Record<string, string>;
+    matchingPairs?: Record<string, string>;
+}
+
+interface ExamItem {
+    id: string;
+    question: string;
+    questionType: string;
+    score: number;
+    options?: Array<{ id: string; text: string }>;
+    dragItems?: Array<{ id: string; text: string }>;
+    dropZones?: Array<{ id: string; label: string }>;
+    leftColumn?: Array<{ id: string; text: string }>;
+    rightColumn?: Array<{ id: string; text: string }>;
+    maxCharacters?: number;
+}
+
+interface ExamData {
+    id?: string;
+    title: string;
+    competency: string;
+    items: ExamItem[];
+    isActive: boolean;
+    timeLimit?: number;
 }
 
 export const gradeExamBatch = onCall<GradeExamInput>({
