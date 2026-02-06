@@ -33,6 +33,7 @@ export interface ChoiceOption {
     id: string;
     text: string;
     isCorrect?: boolean;  // For auto-grading
+    imageUrl?: string;    // Optional image for the choice
 }
 
 // Drag & Drop structures
