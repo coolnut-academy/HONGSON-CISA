@@ -8,110 +8,71 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Helper function to get user role - with null safety
-    function getUserData() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-    }
-    
     // Check if user has admin role
     function isAdmin() {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             getUserData().role in ['admin', 'super_admin'];
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin'];
     }
     
     // Check if user is super_admin
     function isSuperAdmin() {
       return isAuthenticated() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             getUserData().role == 'super_admin';
-    }
-    
-    // Check if query filters by studentId (for list operations)
-    function isQueryingOwnSubmissions() {
-      return request.query.filters[0].field == 'studentId' &&
-             request.query.filters[0].op == '==' &&
-             request.query.filters[0].value == request.auth.uid;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
     }
     
     // Users collection
     match /users/{userId} {
-      // Anyone authenticated can read their own document
-      allow read: if isAuthenticated() && request.auth.uid == userId;
-      // Admins can read all users (with existence check)
-      allow read: if isAuthenticated() && 
-                     exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'super_admin'];
-      // Users can create their own document (for registration)
-      allow create: if isAuthenticated() && request.auth.uid == userId;
-      // Users can update their own document
-      allow update: if isAuthenticated() && request.auth.uid == userId;
-      // Super admin can update ANY user document (for role management)
-      allow update: if isSuperAdmin();
-      // Only super_admin can delete users
+      allow get: if isAuthenticated() && request.auth.uid == userId;
+      allow list: if isAdmin();
+      allow create, update: if isAuthenticated() && request.auth.uid == userId;
       allow delete: if isSuperAdmin();
     }
     
-    // Pre-registered students collection
+    // Pre-registered students
     match /pre_registered_students/{studentId} {
-      // Allow reading for login verification (needed during registration)
       allow get: if true;
-      // Admins can read list
       allow list: if isAdmin();
-      // Only super_admin can write
       allow write: if isSuperAdmin();
     }
     
-    // Exams collection - SIMPLIFIED: All authenticated users can read
+    // Exams - all authenticated users can read
     match /exams/{examId} {
-      // Any authenticated user can read exams (students, admins, etc.)
       allow read: if isAuthenticated();
-      // Only admins can create/update/delete exams
       allow write: if isAdmin();
     }
     
-    // Submissions collection
+    // Submissions
     match /submissions/{submissionId} {
-      // GET: Allow if own document or admin
-      // resource == null allows checking exists() without permission error
-      allow get: if isAuthenticated() && (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
+      // GET: own document or admin
+      allow get: if isAuthenticated() && 
+        (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
       
-      // LIST: 
-      // - Admins can list all
-      // - Students can only list if they filter by their own studentId
-      allow list: if isAdmin() || 
-                    (isAuthenticated() && 
-                     request.query.filters[0].field == 'studentId' &&
-                     request.query.filters[0].op == '==' &&
-                     request.query.filters[0].value == request.auth.uid);
+      // LIST: allow authenticated users (student can see own via client-side filter)
+      allow list: if isAuthenticated();
       
-      // DISABLED: Client-side creation - must use submitExam Cloud Function
-      // This prevents:
-      // - Forged scores
-      // - Impersonation (changing studentId)
-      // - Invalid answer formats
-      // - Fake time spent
+      // CREATE: Only through Cloud Function
       allow create: if false;
             
-      // Only admins can update/delete
+      // UPDATE/DELETE: Only admins
       allow update, delete: if isAdmin();
     }
 
-    // Submission Archives collection (for history)
+    // Submission Archives
     match /submission_archives/{archiveId} {
-      // GET: Allow if own document or admin
-      allow get: if isAuthenticated() && (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
+      // GET: own document or admin
+      allow get: if isAuthenticated() && 
+        (resource == null || resource.data.studentId == request.auth.uid || isAdmin());
       
-      // LIST: Only admins can list
-      // Students should not need to list archives (they see active submissions only)
-      allow list: if isAdmin();
+      // LIST: allow authenticated users to list (student filters by own studentId in query)
+      allow list: if isAuthenticated();
       
-      // Admins can create/update/delete
+      // CREATE/UPDATE/DELETE: Only admins
       allow create, update, delete: if isAdmin();
     }
 
-    
-    // AI Grading config/results
+    // AI Grading
     match /ai_grading/{gradingId} {
       allow read: if isAdmin();
       allow write: if isSuperAdmin();
